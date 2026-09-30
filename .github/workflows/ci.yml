@@ -1,0 +1,47 @@
+name: Validate deployment sources
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  source-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Validate shell scripts and redirect behavior
+        run: |
+          bash -n railway-sm-redaxo/entrypoint.sh
+          for file in railway-*/entrypoint.sh; do
+            case "$file" in railway-sm-redaxo/entrypoint.sh) ;; *) sh -n "$file" ;; esac
+          done
+          node --test tests/*.test.mjs
+  images:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        directory:
+          - railway-sm-redaxo
+          - railway-sm-redaxo-origin
+          - railway-svu-wordpress
+          - railway-svu-origin
+          - railway-wengertsberg-wordpress
+          - railway-wengertsberg-origin
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: ${{ matrix.directory }}
+          load: true
+          tags: local/web-service:test
+          cache-from: type=gha,scope=${{ matrix.directory }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.directory }}
+      - name: Verify protected origin
+        if: endsWith(matrix.directory, '-origin')
+        run: bash tests/origin-smoke.sh local/web-service:test

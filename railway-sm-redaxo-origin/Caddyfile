@@ -1,0 +1,18 @@
+:8080 {
+	@health path /healthz
+	handle @health {
+		respond "ok" 200
+	}
+
+	@cloudfront header X-SM-Origin-Key {$ORIGIN_VERIFY}
+	handle @cloudfront {
+		reverse_proxy {$REDAXO_UPSTREAM} {
+			header_up Host schlossmuehle-untereuerheim.de
+			header_up X-Forwarded-Proto https
+		}
+	}
+
+	handle {
+		respond "Forbidden" 403
+	}
+}

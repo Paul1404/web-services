@@ -1,0 +1,31 @@
+version: 2
+updates:
+  - package-ecosystem: docker
+    directories:
+      - /railway-sm-redaxo
+      - /railway-sm-redaxo-origin
+      - /railway-svu-wordpress
+      - /railway-svu-origin
+      - /railway-wengertsberg-wordpress
+      - /railway-wengertsberg-origin
+    schedule:
+      interval: weekly
+      day: sunday
+      time: "08:00"
+      timezone: Europe/Berlin
+    groups:
+      caddy:
+        patterns: ["caddy"]
+      wordpress:
+        patterns: ["wordpress"]
+    open-pull-requests-limit: 5
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: sunday
+      time: "08:00"
+      timezone: Europe/Berlin
+    groups:
+      actions:
+        patterns: ["*"]

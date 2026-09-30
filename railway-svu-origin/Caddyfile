@@ -1,0 +1,18 @@
+:8080 {
+	@health path /healthz
+	handle @health {
+		respond "ok" 200
+	}
+
+	@cloudfront header X-SVU-Origin-Key {$ORIGIN_VERIFY}
+	handle @cloudfront {
+		reverse_proxy {$WORDPRESS_UPSTREAM} {
+			header_up Host sv-untereuerheim.de
+			header_up X-Forwarded-Proto https
+		}
+	}
+
+	handle {
+		respond "Forbidden" 403
+	}
+}

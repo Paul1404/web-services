@@ -1,0 +1,16 @@
+.env
+.env.*
+!.env.example
+*.sql
+*.sqlite*
+*.db
+*.pem
+*.key
+*.p12
+*.backup
+*.bak
+*.log
+uploads/
+data/
+node_modules/
+.DS_Store
