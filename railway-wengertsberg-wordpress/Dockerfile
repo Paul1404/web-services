@@ -1,4 +1,4 @@
-FROM wordpress:7.1.0
+FROM wordpress:7.1.3
 
 # The amd64 variant currently enables both Apache MPMs. PHP's prefork MPM is
 # required; loading event alongside it makes Apache fail before WordPress starts.

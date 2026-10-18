@@ -1,4 +1,4 @@
-FROM wordpress:7.1.0
+FROM wordpress:7.1.3
 
 # The amd64 image can enable both Apache MPMs; PHP needs prefork only.
 RUN a2dismod mpm_event \
