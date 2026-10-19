@@ -1,5 +1,8 @@
 FROM wordpress:7.1.0
 
+# Keep a smaller idle Apache pool while preserving the existing request ceiling.
+COPY mpm_prefork.conf /etc/apache2/mods-available/mpm_prefork.conf
+
 # The amd64 image can enable both Apache MPMs; PHP needs prefork only.
 RUN a2dismod mpm_event \
     && a2enmod mpm_prefork \
