@@ -23,6 +23,13 @@ their content hash during the image build. Use these paths instead of query
 parameters so browser/CDN caching cannot retain a previous design. Run the
 same script when applying theme files directly for an initial setup.
 
+The homepage emits Open Graph metadata for link previews. `theme/share-preview.svg`
+is the editable brand artwork; `share-preview.png` is its 1200x630 raster
+export. Keep both in sync when changing the artwork and retain the content hash
+in the public PNG filename. Verify the advertised metadata and public image
+response after deployment; crawler checks do not confirm a messaging client's
+actual rendering or refresh an already-cached preview.
+
 The homepage uses standard WordPress blocks, initially seeded from
 `site-content.html`. Edit the published homepage in WordPress after initial
 setup. Do not import that file again over editorial changes. Existing media
