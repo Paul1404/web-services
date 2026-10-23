@@ -25,6 +25,11 @@ root directories and watch patterns in the same scoped operation.
   `unavailable`, disables caching, and makes read-only database checks.
 - Railway deployment health paths are `/healthz` for all six services, with a
   90-second startup timeout. CMS Apache aliases that path to the probe file.
+- Set Railway `PORT=80` on the CMS services and `PORT=8080` on origins, matching
+  their actual Apache/Caddy listeners. Private upstreams still use CMS port 80;
+  do not change those listeners to accommodate an injected health-check port.
+- Origin readiness depends on its CMS. Recover the CMS first, then retry an
+  origin deployment that failed while its backend was unavailable.
 - Entrypoints refresh only the service-owned `railway-health.php` in the
   persistent web root. Do not replace CMS configuration, media or editor content.
 - Caddy forwards the canonical Host and `X-Forwarded-Proto: https`.
