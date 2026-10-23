@@ -87,7 +87,7 @@ function wengertsberg_contact_send(WP_REST_Request $request): WP_REST_Response {
         }
     }
     $token = $data['token'];
-    if (!preg_match('/^(\d{10})\.([a-f0-9]{32})\.([a-f0-9]{64})$/', $token, $parts)
+    if (!preg_match('/^(\d{10})\.([a-f0-9]{32})\.([a-f0-9]{64})$/D', $token, $parts)
         || !hash_equals(hash_hmac('sha256', $parts[1] . '.' . $parts[2], wp_salt('nonce')), $parts[3])) {
         return $fail('Bitte lade das Formular neu und versuche es noch einmal.', 419);
     }
