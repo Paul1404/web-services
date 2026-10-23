@@ -1,5 +1,6 @@
 <?php
 defined('ABSPATH') || exit;
+require_once __DIR__ . '/contact.php';
 
 add_action('after_setup_theme', function () {
     add_theme_support('title-tag');
@@ -96,5 +97,6 @@ add_shortcode('wengertsberg_contact', function () {
         }
         $html .= '<p class="contact-phone"><a class="contact-link" href="' . esc_url('tel:' . $dial) . '">' . wengertsberg_contact_icon('phone') . '<span class="contact-text">' . esc_html($phone) . '</span></a></p>';
     }
-    return $html . '<p class="contact-place">' . wengertsberg_contact_icon('location') . '<span>Region Schweinfurt in Bayern</span></p>';
+    $html .= '<p class="contact-place">' . wengertsberg_contact_icon('location') . '<span>Region Schweinfurt in Bayern</span></p>';
+    return $html . wengertsberg_contact_form();
 });

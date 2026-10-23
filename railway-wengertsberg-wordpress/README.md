@@ -36,9 +36,31 @@ setup. Do not import that file again over editorial changes. Existing media
 stays in the media library; photography must not be committed here.
 
 Contact details are editable under Appearance > Customize > Wengertsberg
-Kontakt. The contact section uses email and telephone links. No contact
-submissions are stored. A future server-side form needs verified delivery,
-abuse protection, and corresponding privacy text.
+Kontakt. The contact section retains direct email/telephone links and includes
+a REST-backed contact form when SMTP is configured. The recipient comes only
+from the administrator's contact setting, never from submitted form fields.
+
+SMTP credentials are runtime references: `WENGERTSBERG_SMTP_HOST`, `_PORT`,
+`_USER` and `_PASSWORD` (each with the full `WENGERTSBERG_SMTP_` prefix). Use
+authenticated STARTTLS on port 587 with certificate verification enabled.
+The Mailcow app password is restricted to SMTP; no mailbox-reading protocols
+are enabled. Transfer secrets using Railway CLI `variable set --stdin`, never
+through tool arguments, output, commits, or local credential files. Do not
+bootstrap Mailcow's full web prerequisites from PHP CLI: they load the schema
+initializer, whose CLI path re-includes core functions. Scoped maintenance
+must load only the required configuration and function libraries.
+
+The form checks the request origin, validates field types/lengths and email,
+uses a honeypot and short-lived signed token, and applies atomic global and
+per-email rate limits. One token identifies one submission; replaying a
+successful request returns its existing result without sending another mail.
+Message contents are not saved in WordPress. Short-lived counters and hashed
+send receipts are cleaned by an hourly WordPress cron task. Do not log request
+bodies or SMTP debug output. Keep the privacy page aligned with these facts.
+
+Verify both the browser flow and receipt in the destination mailbox. An SMTP
+success response alone is not proof of delivery. Test failure responses and
+duplicate requests as well as a successful send, without emailing visitors.
 
 Use `php -l theme/*.php` (one file per invocation), `node --check theme/site.js`,
 and `sh -n entrypoint.sh` for scoped source checks. Exercise anchor navigation,
