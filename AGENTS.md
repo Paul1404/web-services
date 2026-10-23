@@ -25,6 +25,9 @@ root directories and watch patterns in the same scoped operation.
 - REDAXO must refuse an empty migrated configuration; its migration hold is
   only for an explicitly authorized data transfer.
 - Never commit credentials, website uploads, database dumps, or runtime config.
+- Wengertsberg's managed theme is in `railway-wengertsberg-wordpress/theme/`.
+  Its entrypoint syncs theme files into the persistent volume, but must never
+  replace WordPress page content. Read that directory's README before edits.
 - Umami, Vaultwarden, MariaDB, and PostgreSQL are Railway image sources, not
   deployments controlled by this repository's Dockerfiles.
 

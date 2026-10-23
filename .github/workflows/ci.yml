@@ -29,6 +29,7 @@ jobs:
             case "$file" in railway-sm-redaxo/entrypoint.sh) ;; *) sh -n "$file" ;; esac
           done
           node --test tests/*.test.mjs
+          node --check railway-wengertsberg-wordpress/theme/site.js
   images:
     runs-on: ubuntu-latest
     strategy:
