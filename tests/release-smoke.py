@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """Production-image checks on disposable, private Docker resources only."""
-import http.cookiejar
+import base64
 import json
 import pathlib
-import socket
 import subprocess
 import sys
 import time
@@ -28,8 +27,8 @@ containers, volumes = [], []
 network = prefix + '-network'
 
 
-def docker(*args, check=True):
-    result = subprocess.run(['docker', *args], capture_output=True, text=True)
+def docker(*args, check=True, input=None):
+    result = subprocess.run(['docker', *args], capture_output=True, text=True, input=input)
     if check and result.returncode:
         raise RuntimeError(result.stderr.strip() or result.stdout.strip())
     return result
@@ -45,30 +44,13 @@ def container(role, *args, selected_image=image, command=(), entrypoint=None):
     return name
 
 
-def free_port():
-    with socket.socket() as connection:
-        connection.bind(('127.0.0.1', 0))
-        return connection.getsockname()[1]
-
-
-class LocalRedirect(urllib.request.HTTPRedirectHandler):
-    def redirect_request(self, request, fp, code, message, headers, target):
-        expected, actual = urllib.parse.urlsplit(request.full_url), urllib.parse.urlsplit(target)
-        assert actual.netloc == expected.netloc and actual.scheme == 'http', 'Fixture tried a non-local redirect'
-        return super().redirect_request(request, fp, code, message, headers, target)
-
-
-cookies = http.cookiejar.CookieJar()
-http = urllib.request.build_opener(LocalRedirect(), urllib.request.HTTPCookieProcessor(cookies))
-
-
 def request(base, path='/', headers=None, data=None):
-    assert urllib.parse.urlsplit(base).hostname == '127.0.0.1', 'Only local test endpoints are allowed'
-    try:
-        response = http.open(urllib.request.Request(base + path, headers=headers or {}, data=data), timeout=8)
-    except urllib.error.HTTPError as error:
-        response = error
-    return response.code, response.headers, response.read()
+    assert urllib.parse.urlsplit(base).hostname in [prefix + '-cms', prefix + '-origin']
+    payload = json.dumps({'url': base + path, 'headers': headers or {},
+                          'data': data.decode() if data is not None else None})
+    result = docker('exec', '-i', client, 'python3', '/http-client.py', input=payload)
+    response = json.loads(result.stdout)
+    return response['status'], response['headers'], base64.b64decode(response['body'])
 
 
 def wait_for(base, path, status=200, attempts=60):
@@ -78,7 +60,7 @@ def wait_for(base, path, status=200, attempts=60):
             last = request(base, path)
             if last[0] == status:
                 return last
-        except (OSError, urllib.error.URLError):
+        except (OSError, RuntimeError):
             pass
         time.sleep(1)
     raise AssertionError(f'{path} did not reach {status}; last status: {last[0] if last else "unreachable"}')
@@ -88,11 +70,10 @@ def origin_checks():
     fixture = ROOT / 'tests/fixtures/upstream.mjs'
     upstream = container('upstream', '-v', f'{fixture}:/fixture.mjs:ro',
                          selected_image='node:24-alpine', command=('node', '/fixture.mjs'))
-    port = free_port()
-    container('origin', '-p', f'127.0.0.1:{port}:8080', '-e', 'ORIGIN_VERIFY=release-fixture-key',
+    container('origin', '-e', 'ORIGIN_VERIFY=release-fixture-key',
               '-e', f'WORDPRESS_UPSTREAM=http://{upstream}:9000',
               '-e', f'REDAXO_UPSTREAM=http://{upstream}:9000')
-    base = f'http://127.0.0.1:{port}'
+    base = f'http://{prefix}-origin:8080'
     assert wait_for(base, '/healthz')[2] == b'ok'
     host, header = SITES[site]
     for path in ['/', '/wp-admin/', '/redaxo/', '/railway-health.php', '/healthz/']:
@@ -112,8 +93,7 @@ def origin_checks():
 
 
 def cms_checks():
-    port = free_port()
-    base = f'http://127.0.0.1:{port}'
+    base = f'http://{prefix}-cms'
     volume = prefix + '-site'
     database_volume = prefix + '-database'
     volumes.extend([volume, database_volume])
@@ -143,12 +123,12 @@ def cms_checks():
         # Test-only upstream setup on a newly created volume and an internal network.
         docker('run', '--rm', '--network', network, *mount, *environment,
                '--entrypoint', 'docker-entrypoint.sh', image, 'true')
-        cms = container('cms', '-p', f'127.0.0.1:{port}:80', *mount, *environment)
+        cms = container('cms', *mount, *environment)
         assert wait_for(base, '/railway-health.php')[2] == b'ok'
         assert request(base, '/redaxo/index.php')[0] == 200, 'REDAXO backend did not boot'
     else:
         fixture = ROOT / 'tests/fixtures/wordpress.php'
-        cms = container('cms', '-p', f'127.0.0.1:{port}:80', *mount,
+        cms = container('cms', *mount,
                         '-v', f'{fixture}:/release-fixture.php:ro',
                         '-e', 'WORDPRESS_DB_HOST=release-db', '-e', 'WORDPRESS_DB_NAME=release',
                         '-e', 'WORDPRESS_DB_USER=release', '-e', 'WORDPRESS_DB_PASSWORD=release-fixture-password',
@@ -190,13 +170,17 @@ def cms_checks():
 
 try:
     docker('network', 'create', '--internal', network)
+    client = container('client', '-v', f'{ROOT / "tests/fixtures/http-client.py"}:/http-client.py:ro',
+                       selected_image='python:3.13-alpine',
+                       command=('python3', '-c', 'import time; time.sleep(3600)'))
     if directory.endswith('-origin'):
         origin_checks()
     else:
         cms_checks()
 except Exception:
     for name in containers:
-        print(docker('logs', '--tail', '30', name, check=False).stdout, file=sys.stderr)
+        logs = docker('logs', '--tail', '30', name, check=False)
+        print(logs.stdout + logs.stderr, file=sys.stderr)
     raise
 finally:
     for name in reversed(containers):
