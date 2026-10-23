@@ -15,7 +15,7 @@ function wengertsberg_contact_form(): string {
         return '';
     }
     ob_start(); ?>
-    <form class="contact-form" hidden data-token-url="<?php echo esc_url(rest_url('wengertsberg/v1/contact-token')); ?>" data-send-url="<?php echo esc_url(rest_url('wengertsberg/v1/contact')); ?>">
+    <form class="contact-form" method="post" action="<?php echo esc_url(rest_url('wengertsberg/v1/contact')); ?>" hidden data-token-url="<?php echo esc_url(rest_url('wengertsberg/v1/contact-token')); ?>" data-send-url="<?php echo esc_url(rest_url('wengertsberg/v1/contact')); ?>">
         <div class="contact-field"><label for="contact-name">Dein Name</label><input id="contact-name" name="name" autocomplete="name" required minlength="2" maxlength="120"></div>
         <div class="contact-field"><label for="contact-email">Deine E-Mail-Adresse</label><input id="contact-email" name="email" type="email" autocomplete="email" required maxlength="254"></div>
         <div class="contact-field"><label for="contact-message">Deine Nachricht</label><textarea id="contact-message" name="message" rows="5" required minlength="10" maxlength="5000"></textarea></div>
@@ -87,7 +87,7 @@ function wengertsberg_contact_send(WP_REST_Request $request): WP_REST_Response {
         }
     }
     $token = $data['token'];
-    if (!preg_match('/^(\d{10})\.([a-f0-9]{32})\.([a-f0-9]{64})$/', $token, $parts)
+    if (!preg_match('/^(\d{10})\.([a-f0-9]{32})\.([a-f0-9]{64})$/D', $token, $parts)
         || !hash_equals(hash_hmac('sha256', $parts[1] . '.' . $parts[2], wp_salt('nonce')), $parts[3])) {
         return $fail('Bitte lade das Formular neu und versuche es noch einmal.', 419);
     }
