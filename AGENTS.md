@@ -23,8 +23,8 @@ root directories and watch patterns in the same scoped operation.
 - Origin `/healthz` proxies the private CMS `/railway-health.php` probe. A
   healthy Caddy process alone is insufficient. The probe returns only `ok` or
   `unavailable`, disables caching, and makes read-only database checks.
-- Railway deployment health paths are `/railway-health.php` for the three CMS
-  services and `/healthz` for the three origins, with a 90-second startup timeout.
+- Railway deployment health paths are `/healthz` for all six services, with a
+  90-second startup timeout. CMS Apache aliases that path to the probe file.
 - Entrypoints refresh only the service-owned `railway-health.php` in the
   persistent web root. Do not replace CMS configuration, media or editor content.
 - Caddy forwards the canonical Host and `X-Forwarded-Proto: https`.

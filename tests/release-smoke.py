@@ -122,7 +122,7 @@ def cms_checks():
         docker('run', '--rm', '--network', network, *mount, *environment,
                '--entrypoint', 'docker-entrypoint.sh', image, 'true')
         cms = container('cms', *mount, *environment)
-        assert wait_for(base, '/railway-health.php')[2] == b'ok'
+        assert wait_for(base, '/healthz')[2] == b'ok'
         assert request(base, '/redaxo/index.php')[0] == 200, 'REDAXO backend did not boot'
     else:
         fixture = ROOT / 'tests/fixtures/wordpress.php'
@@ -133,9 +133,9 @@ def cms_checks():
                         '-e', 'WEB_SERVICES_RELEASE_TEST=1', '-e', f'RELEASE_URL={base}',
                         '-e', f'RELEASE_THEME={site}')
         wait_for(base, '/wp-admin/install.php')
-        assert request(base, '/railway-health.php')[0] == 503, 'An uninstalled WordPress reported ready'
+        assert request(base, '/healthz')[0] == 503, 'An uninstalled WordPress reported ready'
         docker('exec', cms, 'php', '/release-fixture.php')
-        assert wait_for(base, '/railway-health.php')[2] == b'ok'
+        assert wait_for(base, '/healthz')[2] == b'ok'
         assert b'Release fixture content' in request(base)[2]
         request(base, '/wp-login.php')
         login = urllib.parse.urlencode({'log': 'release-admin', 'pwd': 'release-fixture-password',
@@ -154,15 +154,15 @@ def cms_checks():
     assert 'mpm_prefork_module' in modules and 'mpm_event_module' not in modules
     docker('exec', cms, 'sh', '-c', 'mkdir -p /var/www/html/release-sentinel; echo fixture > /var/www/html/release-sentinel/preserved.txt')
     docker('restart', cms)
-    assert wait_for(base, '/railway-health.php')[2] == b'ok'
+    assert wait_for(base, '/healthz')[2] == b'ok'
     assert request(base, '/release-sentinel/preserved.txt')[2].strip() == b'fixture'
     if site != 'sm-redaxo':
         assert b'Release fixture content' in request(base)[2], 'Restart lost editor content'
     docker('stop', database)
-    status, _, body = request(base, '/railway-health.php')
+    status, _, body = request(base, '/healthz')
     assert status == 503 and body == b'unavailable', 'Health did not safely reject an unavailable database'
     docker('start', database)
-    assert wait_for(base, '/railway-health.php')[2] == b'ok'
+    assert wait_for(base, '/healthz')[2] == b'ok'
     print(f'{directory}: CMS/database readiness, prefork, persistent files, database failure and recovery passed')
 
 

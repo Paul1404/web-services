@@ -12,3 +12,6 @@ RUN chmod 755 /usr/local/bin/redaxo-railway-entrypoint
 
 ENTRYPOINT ["/usr/local/bin/redaxo-railway-entrypoint"]
 CMD ["apache2-foreground"]
+
+COPY healthz.conf /etc/apache2/conf-available/railway-health.conf
+RUN a2enmod alias && a2enconf railway-health && apache2ctl -t
