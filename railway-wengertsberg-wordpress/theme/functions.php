@@ -98,5 +98,6 @@ add_shortcode('wengertsberg_contact', function () {
         $html .= '<p class="contact-phone"><a class="contact-link" href="' . esc_url('tel:' . $dial) . '">' . wengertsberg_contact_icon('phone') . '<span class="contact-text">' . esc_html($phone) . '</span></a></p>';
     }
     $html .= '<p class="contact-place">' . wengertsberg_contact_icon('location') . '<span>Region Schweinfurt in Bayern</span></p>';
-    return $html . wengertsberg_contact_form();
+    $form = wengertsberg_contact_form();
+    return '<div class="contact-methods' . ($form ? ' with-form' : '') . '">' . $html . '</div>' . $form;
 });
