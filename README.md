@@ -34,6 +34,8 @@ Readiness is checked through the origin to a private CMS probe, including its
 database. The response contains only `ok` or `unavailable` and is not cached.
 The probe lives in a service-owned file refreshed on startup, without replacing
 website content, uploads or configuration.
+Railway deployment gates use `/railway-health.php` for CMS services and
+`/healthz` for origins, with a 90-second startup timeout.
 
 ## Deployment
 
