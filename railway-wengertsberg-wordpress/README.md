@@ -82,3 +82,12 @@ inline SVG icons. Public pages must not use decorative dot separators or
 em/en dashes. Avoid generic feature-card grids, qualification badges, repeated
 category labels, and inflated marketing copy. Keep the focus on Alexander,
 his actual experience, and readable service descriptions.
+
+Apache listens on port 80. Keep the Railway service variable `PORT=80` so
+deployment health checks target the actual listener. `/healthz` must return
+200 only when WordPress can read its database. Public recovery verification
+also requires HTML from the canonical website URL.
+
+Use standard HTTP status 403 for invalid or expired contact tokens. WordPress
+does not supply a status phrase for 419, which can produce HTTP 200 despite
+the error response body.
