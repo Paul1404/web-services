@@ -31,4 +31,7 @@ php /var/www/html/redaxo/bin/console -q -n db:set-connection \
   --login="$REDAXO_DB_LOGIN" \
   --password="$REDAXO_DB_PASSWORD"
 
+cp /usr/local/share/railway-health.php /var/www/html/railway-health.php
+chmod 644 /var/www/html/railway-health.php
+
 exec docker-entrypoint.sh "$@"

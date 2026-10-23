@@ -14,6 +14,8 @@ RUN a2dismod mpm_event \
     && apache2ctl -t
 
 COPY entrypoint.sh /usr/local/bin/wengertsberg-entrypoint
+COPY railway-health.php /usr/local/share/railway-health.php
+RUN php -l /usr/local/share/railway-health.php
 RUN chmod 755 /usr/local/bin/wengertsberg-entrypoint
 
 ENTRYPOINT ["wengertsberg-entrypoint"]
