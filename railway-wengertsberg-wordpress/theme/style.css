@@ -61,6 +61,7 @@ button, input, textarea { font: inherit; }
 .wp-block-image { margin: 0; }
 .wp-element-caption { font-size: 12px; line-height: 1.6; color: var(--muted); margin-top: 12px; }
 .section { padding: 80px 0; }
+.section h2 { margin-bottom: 28px; }
 .about { border-top: 1px solid var(--line); }
 .about-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 100px; align-items: start; }
 .about-copy p { color: var(--muted); }
@@ -69,6 +70,7 @@ button, input, textarea { font: inherit; }
 .about-place img { width: 100%; }
 .services { background: #ebeee7; }
 .section-intro { max-width: 660px; color: var(--muted); margin-bottom: 38px; }
+.services .section-intro { margin-bottom: 38px; }
 .service-list { border-top: 1px solid #c9d2c3; }
 .service-row { display: grid; grid-template-columns: 1fr 1.8fr; gap: 65px; padding: 25px 0; border-bottom: 1px solid #c9d2c3; }
 .service-row h3 { padding-right: 20px; }

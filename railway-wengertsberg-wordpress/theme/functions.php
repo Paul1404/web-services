@@ -59,7 +59,11 @@ add_shortcode('wengertsberg_contact', function () {
         $html .= '<a class="contact-address" href="' . esc_url('mailto:' . $email) . '">' . esc_html($email) . '</a>';
     }
     if ($phone) {
-        $html .= '<p class="contact-phone"><a href="' . esc_url('tel:' . preg_replace('/[^+0-9]/', '', $phone)) . '">' . esc_html($phone) . '</a></p>';
+        $dial = preg_replace('/[^+0-9]/', '', $phone);
+        if (str_starts_with($dial, '0')) {
+            $dial = '+49' . substr($dial, 1);
+        }
+        $html .= '<p class="contact-phone"><a href="' . esc_url('tel:' . $dial) . '">' . esc_html($phone) . '</a></p>';
     }
     return $html . '<p class="contact-place">Region Schweinfurt in Bayern</p>';
 });
