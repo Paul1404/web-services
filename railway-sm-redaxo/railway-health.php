@@ -22,20 +22,17 @@ try {
     if (!$host || !isset($host['host'])) {
         exit;
     }
-    mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-    $connection = mysqli_init();
-    $connection->options(MYSQLI_OPT_CONNECT_TIMEOUT, 3);
-    $connection->real_connect(
-        trim($host['host'], '[]'),
+    // REDAXO's image provides PDO MySQL, not WordPress's mysqli extension.
+    $connection = new PDO(
+        'mysql:host=' . trim($host['host'], '[]') . ';port=' . ($host['port'] ?? 3306)
+            . ';dbname=' . getenv('REDAXO_DB_NAME') . ';charset=utf8mb4',
         getenv('REDAXO_DB_LOGIN'),
         getenv('REDAXO_DB_PASSWORD'),
-        getenv('REDAXO_DB_NAME'),
-        $host['port'] ?? 3306
+        [PDO::ATTR_TIMEOUT => 3, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
     );
     // Respect custom REDAXO prefixes without exposing any table or row data.
-    $tables = $connection->query("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND (table_name LIKE '%article' OR table_name LIKE '%user')")->fetch_row();
-    $ready = (int) $tables[0] >= 2;
-    $connection->close();
+    $tables = $connection->query("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND (table_name LIKE '%article' OR table_name LIKE '%user')")->fetchColumn();
+    $ready = (int) $tables >= 2;
 } catch (Throwable $error) {
     // Health responses must never contain configuration or database details.
 }
