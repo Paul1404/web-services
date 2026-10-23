@@ -33,8 +33,27 @@ function wengertsberg_brand(): void {
 }
 
 add_action('wp_head', function () {
-    if (is_front_page()) {
-        echo '<meta name="description" content="Alexander Eckert begleitet Führungskräfte, Teams und Organisationen durch Veränderung. Coaching, Training und Consulting aus der Region Schweinfurt.">' . "\n";
+    if (!is_front_page()) {
+        return;
+    }
+    $description = 'Coaching, Training und Beratung mit Alexander Eckert. Für Führungskräfte, Teams und Organisationen in der Region Schweinfurt.';
+    $image = get_template_directory_uri() . '/' . wengertsberg_asset('share-preview.png');
+    echo '<meta name="description" content="' . esc_attr($description) . '">' . "\n";
+    $properties = [
+        'og:type' => 'website',
+        'og:locale' => 'de_DE',
+        'og:site_name' => 'Wengertsberg',
+        'og:title' => wp_get_document_title(),
+        'og:description' => $description,
+        'og:url' => home_url('/'),
+        'og:image' => esc_url_raw($image),
+        'og:image:type' => 'image/png',
+        'og:image:width' => '1200',
+        'og:image:height' => '630',
+        'og:image:alt' => 'Wengertsberg Training & Consulting, Alexander Eckert',
+    ];
+    foreach ($properties as $property => $content) {
+        echo '<meta property="' . esc_attr($property) . '" content="' . esc_attr($content) . '">' . "\n";
     }
 });
 
