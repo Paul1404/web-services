@@ -91,3 +91,18 @@ also requires HTML from the canonical website URL.
 Use standard HTTP status 403 for invalid or expired contact tokens. WordPress
 does not supply a status phrase for 419, which can produce HTTP 200 despite
 the error response body.
+
+## Mobile presentation
+
+The layout changes at 800px. Desktop geometry and full copy stay intact.
+The homepage stores seven paired inline `desktop-copy` / `mobile-copy` spans
+in its existing paragraph blocks. Edit both variants in the WordPress block
+HTML editor when changing these passages; do not reimport the initial seed.
+The mobile header contact action is hidden on desktop. Below 360px it uses a
+labelled envelope icon so the brand and 44px touch targets still fit.
+
+JavaScript progressively wraps the existing qualification heading and paragraph
+in a native details disclosure on mobile, restoring those original nodes on
+desktop. Without JavaScript, qualifications remain expanded. Test opening and
+closing with the keyboard, menu links and Escape, and resizing across 800px.
+Verify at 320px and a typical phone width as well as the existing desktop view.

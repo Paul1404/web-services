@@ -6,13 +6,16 @@ if (toggle && nav) {
   toggle.hidden = false;
   const closeMenu = () => {
     toggle.setAttribute('aria-expanded', 'false');
+    toggle.setAttribute('aria-label', 'Menü öffnen');
     nav.classList.remove('is-open');
   };
   toggle.addEventListener('click', () => {
     const open = toggle.getAttribute('aria-expanded') !== 'true';
     toggle.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-label', open ? 'Menü schließen' : 'Menü öffnen');
     nav.classList.toggle('is-open', open);
   });
+  document.querySelector('.mobile-contact')?.addEventListener('click', closeMenu);
   nav.querySelectorAll('a').forEach(link => link.addEventListener('click', closeMenu));
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape' && nav.classList.contains('is-open')) {
@@ -23,6 +26,32 @@ if (toggle && nav) {
   document.addEventListener('click', event => {
     if (!event.target.closest('.site-header')) closeMenu();
   });
+}
+
+
+// Keep the editor's original content and desktop heading. Only mobile gains
+// a native, keyboard-accessible disclosure; no-JavaScript readers see it all.
+const mobileLayout = window.matchMedia('(max-width: 800px)');
+const qualificationsHeading = document.querySelector('.about-copy > h3');
+const qualificationsText = qualificationsHeading?.nextElementSibling;
+if (qualificationsHeading && qualificationsText?.tagName === 'P') {
+  const disclosure = document.createElement('details');
+  disclosure.className = 'mobile-qualifications';
+  const summary = document.createElement('summary');
+  summary.textContent = 'Qualifikationen ansehen';
+  disclosure.append(summary);
+  const updateQualifications = () => {
+    if (mobileLayout.matches && !disclosure.isConnected) {
+      qualificationsHeading.before(disclosure);
+      disclosure.append(qualificationsHeading, qualificationsText);
+      disclosure.open = false;
+    } else if (!mobileLayout.matches && disclosure.isConnected) {
+      disclosure.before(qualificationsHeading, qualificationsText);
+      disclosure.remove();
+    }
+  };
+  mobileLayout.addEventListener('change', updateQualifications);
+  updateQualifications();
 }
 
 document.querySelectorAll('.contact-form').forEach(form => {
