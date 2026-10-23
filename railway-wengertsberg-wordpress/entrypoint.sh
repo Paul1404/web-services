@@ -13,4 +13,7 @@ mkdir -p /var/www/html/wp-content/themes/wengertsberg
 cp -R /usr/src/wengertsberg-theme/. /var/www/html/wp-content/themes/wengertsberg/
 chown -R www-data:www-data /var/www/html/wp-content/themes/wengertsberg
 
+cp /usr/local/share/railway-health.php /var/www/html/railway-health.php
+chmod 644 /var/www/html/railway-health.php
+
 exec docker-entrypoint.sh "$@"

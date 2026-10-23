@@ -11,6 +11,12 @@ existing table prefix and the public `https://wengertsberg.de` site
 URL when migrating. Do not deploy an empty WordPress volume as a replacement
 for the copied site.
 
+The private CMS's Railway readiness path is `/healthz`, mapped by Apache to
+`railway-health.php`. It loads WordPress core with `SHORTINIT`, verifies the
+configured site's database read-only, and returns only `ok` or `unavailable`.
+The image must ship the alias before enabling this deployment gate. The
+entrypoint copies the managed probe onto the persistent volume at startup.
+
 ## Website theme
 
 `theme/` is the managed Wengertsberg classic theme. The image stores it outside
