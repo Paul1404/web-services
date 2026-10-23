@@ -30,6 +30,13 @@ the site's CloudFront origin verification header. The CMS services have no
 public Railway domain. The origins forward the canonical hostname and HTTPS
 indication to avoid redirect loops.
 
+Readiness is checked through the origin to a private CMS probe, including its
+database. The response contains only `ok` or `unavailable` and is not cached.
+The probe lives in a service-owned file refreshed on startup, without replacing
+website content, uploads or configuration.
+Railway deployment gates use `/healthz` for all six services, with a 90-second
+startup timeout. CMS Apache aliases that path to the readiness probe.
+
 ## Deployment
 
 The Railway project is `web-services`. Each of the six build services follows
@@ -56,8 +63,14 @@ backups must be inspected and maintained directly in Railway.
 
 - Dependabot checks the six active Dockerfiles and GitHub Actions weekly.
   Related Caddy and WordPress updates are grouped; upgrades remain reviewed.
-- CI builds all six images on Linux. Origin checks validate Caddy, public health
-  responses, and rejection of direct requests without the verification header.
+- CI builds and runs all six images on Linux. Origin checks exercise authorized
+  forwarding, direct-request denial, upstream failure and recovery. Disposable
+  CMS fixtures verify database-backed readiness, restart persistence, prefork
+  Apache and database outage handling; WordPress also exercises editor login.
+- `python3 tests/release-smoke.py <build-directory> <image>` runs these checks
+  using isolated Docker resources and synthetic data. No production credentials
+  or volumes are used. Fixtures cannot reach external networks and WordPress
+  email is disabled.
 - After a production change, verify the actual Railway deployment and public
   website. Test an authenticated CMS workflow when relevant.
 - Railway volume snapshots are not an independent off-platform backup.

@@ -30,8 +30,11 @@ jobs:
           done
           node --test tests/*.test.mjs
           node --check railway-wengertsberg-wordpress/theme/site.js
+          python3 -m py_compile tests/release-smoke.py
+          cmp railway-svu-wordpress/railway-health.php railway-wengertsberg-wordpress/railway-health.php
   images:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -52,6 +55,5 @@ jobs:
           tags: local/web-service:test
           cache-from: type=gha,scope=${{ matrix.directory }}
           cache-to: type=gha,mode=max,scope=${{ matrix.directory }}
-      - name: Verify protected origin
-        if: endsWith(matrix.directory, '-origin')
-        run: bash tests/origin-smoke.sh local/web-service:test
+      - name: Verify the production image with isolated fixtures
+        run: python3 tests/release-smoke.py '${{ matrix.directory }}' local/web-service:test

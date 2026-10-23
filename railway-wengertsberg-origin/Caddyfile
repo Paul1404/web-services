@@ -1,7 +1,11 @@
 :8080 {
 	@health path /healthz
 	handle @health {
-		respond "ok" 200
+		reverse_proxy {$WORDPRESS_UPSTREAM} {
+			rewrite /railway-health.php
+			header_up Host wengertsberg.de
+			header_up X-Forwarded-Proto https
+		}
 	}
 
 	@cloudfront header X-Wengertsberg-Origin-Key {$ORIGIN_VERIFY}
