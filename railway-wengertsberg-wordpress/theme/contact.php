@@ -89,11 +89,11 @@ function wengertsberg_contact_send(WP_REST_Request $request): WP_REST_Response {
     $token = $data['token'];
     if (!preg_match('/^(\d{10})\.([a-f0-9]{32})\.([a-f0-9]{64})$/D', $token, $parts)
         || !hash_equals(hash_hmac('sha256', $parts[1] . '.' . $parts[2], wp_salt('nonce')), $parts[3])) {
-        return $fail('Bitte lade das Formular neu und versuche es noch einmal.', 419);
+        return $fail('Bitte lade das Formular neu und versuche es noch einmal.', 403);
     }
     $age = time() - (int) $parts[1];
     if ($age < 2 || $age > 1800) {
-        return $fail('Bitte lade das Formular neu und versuche es noch einmal.', 419);
+        return $fail('Bitte lade das Formular neu und versuche es noch einmal.', 403);
     }
     $name = trim($data['name']);
     $email = trim($data['email']);
