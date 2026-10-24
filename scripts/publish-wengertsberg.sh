@@ -7,6 +7,29 @@ test -n "$PROMOTION_KEY"
 umask 077
 artifact_dir="$RUNNER_TEMP/wengertsberg-artifacts"
 mkdir -p "$artifact_dir"
+# The key is scoped only to the private desired-state repository. No host key,
+# website runtime credential or mail credential is available to this workflow.
+printf '%s\n' "$PROMOTION_KEY" > "$RUNNER_TEMP/promotion-key"
+unset PROMOTION_KEY
+gh api meta > "$RUNNER_TEMP/github-meta.json"
+RUNNER_TEMP="$RUNNER_TEMP" python3 - <<'PY'
+import json,os,pathlib
+p=pathlib.Path(os.environ['RUNNER_TEMP'])
+keys=[x for x in json.loads((p/'github-meta.json').read_text())['ssh_keys'] if x.startswith('ssh-ed25519 ')]
+assert len(keys)==1
+(p/'promotion-known-hosts').write_text('github.com '+keys[0]+'\n')
+(p/'promotion-ssh-config').write_text(f'Host github.com\n HostName ssh.github.com\n Port 443\n User git\n HostKeyAlias github.com\n IdentityFile {p}/promotion-key\n IdentitiesOnly yes\n StrictHostKeyChecking yes\n UserKnownHostsFile {p}/promotion-known-hosts\n')
+PY
+export GIT_SSH_COMMAND="ssh -F $RUNNER_TEMP/promotion-ssh-config"
+git clone --quiet git@github.com:Paul1404/web-host-gitops.git "$RUNNER_TEMP/desired-state"
+pinned=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["source"]["commit"])' "$RUNNER_TEMP/desired-state/sites/wengertsberg.json")
+[[ "$pinned" =~ ^[0-9a-f]{40}$ ]]
+# Compare cumulatively with the last desired release. This also catches a site
+# change whose CI was superseded by an unrelated documentation commit.
+if test "$pinned" != 0000000000000000000000000000000000000000 && git cat-file -e "$pinned^{commit}" 2>/dev/null && git diff --quiet "$pinned" "$RELEASE_SHA" -- railway-wengertsberg-wordpress railway-wengertsberg-origin scripts/publish-wengertsberg.sh .github/workflows/publish-wengertsberg.yml; then
+    echo 'Wengertsberg release inputs are unchanged'
+    exit 0
+fi
 tag="wengertsberg-$RELEASE_SHA"
 published=false
 if gh release view "$tag" --json isDraft > "$artifact_dir/release-status.json" 2>/dev/null; then
@@ -45,22 +68,9 @@ PY
     gh release upload "$tag" "$artifact_dir/wordpress.tar.gz" "$artifact_dir/origin.tar.gz" "$artifact_dir/database.tar.gz" "$artifact_dir/release.json" --clobber
     gh release edit "$tag" --draft=false
 fi
-# The key is scoped only to the private desired-state repository. No host key,
-# website runtime credential or mail credential is available to this workflow.
-printf '%s\n' "$PROMOTION_KEY" > "$RUNNER_TEMP/promotion-key"
-unset PROMOTION_KEY
-gh api meta > "$RUNNER_TEMP/github-meta.json"
-RUNNER_TEMP="$RUNNER_TEMP" python3 - <<'PY'
-import json,os,pathlib
-p=pathlib.Path(os.environ['RUNNER_TEMP'])
-keys=[x for x in json.loads((p/'github-meta.json').read_text())['ssh_keys'] if x.startswith('ssh-ed25519 ')]
-assert len(keys)==1
-(p/'promotion-known-hosts').write_text('github.com '+keys[0]+'\n')
-(p/'promotion-ssh-config').write_text(f'Host github.com\n HostName ssh.github.com\n Port 443\n User git\n HostKeyAlias github.com\n IdentityFile {p}/promotion-key\n IdentitiesOnly yes\n StrictHostKeyChecking yes\n UserKnownHostsFile {p}/promotion-known-hosts\n')
-PY
-export GIT_SSH_COMMAND="ssh -F $RUNNER_TEMP/promotion-ssh-config"
-git clone --quiet git@github.com:Paul1404/web-host-gitops.git "$RUNNER_TEMP/desired-state"
 cd "$RUNNER_TEMP/desired-state"
+git fetch --quiet origin main
+git reset --hard origin/main
 git switch -c "releases/wengertsberg-$RELEASE_SHA"
 ARTIFACT_DIR="$artifact_dir" python3 - <<'PY'
 import json,os,pathlib
