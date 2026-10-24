@@ -121,7 +121,7 @@ def cms_checks():
         # Test-only upstream setup on a newly created volume and an internal network.
         docker('run', '--rm', '--network', network, *mount, *environment,
                '--entrypoint', 'docker-entrypoint.sh', image, 'true')
-        cms = container('cms', *mount, *environment)
+        cms = container('cms', *mount, *environment, '-v', f'{ROOT / "tests/fixtures/redaxo-analytics.php"}:/var/www/html/analytics-fixture.php:ro')
         assert wait_for(base, '/healthz')[2] == b'ok'
         assert request(base, '/redaxo/index.php')[0] == 200, 'REDAXO backend did not boot'
     else:
@@ -154,9 +154,9 @@ def cms_checks():
     # receive a tracker. Use a synthetic public PHP page for the REDAXO filter.
     assert request(base, '/site-analytics/consent.js')[0] == 200
     if site == 'sm-redaxo':
-        docker('exec', cms, 'sh', '-c', "printf '%s' '<?php echo \"<html><body>Public fixture</body></html>\";' > /var/www/html/analytics-fixture.php")
         html = request(base, '/analytics-fixture.php')[2]
-        assert b'/site-analytics/consent.js' in html, 'Public consent gate missing'
+        assert b'/site-analytics/consent.js' in html, 'Native REDAXO output filter missing'
+        assert b'https://umami.pdcd.net/script.js' not in html, 'Legacy tracker escaped final output filter'
         assert b'/site-analytics/consent.js' not in request(base, '/redaxo/index.php')[2]
     else:
         # The client is now logged in, so instrumentation must be absent.
