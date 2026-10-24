@@ -6,14 +6,16 @@ add_action('wp_head', function () {
         return;
     }
     $description = 'Coaching, Training und Beratung mit Alexander Eckert. Für Führungskräfte, Teams und Organisationen in der Region Schweinfurt.';
+    $share_title = 'Training & Consulting aus Schweinfurt | Wengertsberg';
+    $share_description = 'Für Führungskräfte, Teams und Organisationen: vom Einzelcoaching bis zum Leitungsteam, vom Shopfloor bis in die Vorstandsetage.';
     $image = get_template_directory_uri() . '/' . wengertsberg_asset('share-preview.png');
     echo '<meta name="description" content="' . esc_attr($description) . '">' . "\n";
     $properties = [
         'og:type' => 'website',
         'og:locale' => 'de_DE',
         'og:site_name' => 'Wengertsberg Training & Consulting',
-        'og:title' => wp_get_document_title(),
-        'og:description' => $description,
+        'og:title' => $share_title,
+        'og:description' => $share_description,
         'og:url' => home_url('/'),
         'og:image' => esc_url_raw($image),
         'og:image:type' => 'image/png',
