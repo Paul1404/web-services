@@ -9,7 +9,7 @@ WordPress files, configuration, uploads, environment values or database data.
 
 The `MX_GITOPS_DEPLOY_KEY` secret is a deploy key scoped only to the private
 `Paul1404/web-host-gitops` repository. It pushes a manifest-only promotion branch.
-That repository checks and merges the promotion; the host pulls protected main.
+That repository checks and merges the promotion; the host pulls the checked manifest from main.
 CI never receives the mail host's root SSH key or website runtime secrets.
 
 Runtime configuration, Quadlet reconciliation, origin DNS, certificate renewal,
@@ -24,3 +24,8 @@ identical; otherwise freeze the new copy and reverse-sync data first.
 
 Other websites and image-based services remain on Railway. This workflow does
 not migrate or deploy SVU, REDAXO, Umami or Vaultwarden.
+
+The publisher compares release inputs with the last desired source commit.
+Unrelated documentation or other-site changes do not recreate this website.
+The private repository uses an explicit CI promotion gate; Paul waived its
+unavailable branch protection. Existing source protection remains enforced.
