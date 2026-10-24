@@ -73,7 +73,7 @@ document.querySelectorAll('.contact-form').forEach(form => {
       await new Promise(resolve => setTimeout(resolve, 2000));
       button.disabled = false;
     } catch {
-      showStatus('Das Formular konnte nicht geladen werden. Bitte lade die Seite neu oder schreibe direkt per E-Mail.', true);
+      showStatus('Das Formular konnte nicht geladen werden. Bitte laden Sie die Seite neu oder schreiben Sie direkt per E-Mail.', true);
     }
   };
   form.hidden = false;
@@ -102,7 +102,7 @@ document.querySelectorAll('.contact-form').forEach(form => {
       });
       const result = await response.json();
       if (!response.ok || !result.ok) {
-        showStatus(result.message || 'Deine Nachricht konnte nicht versendet werden. Bitte versuche es erneut oder schreibe direkt per E-Mail.', true);
+        showStatus(result.message || 'Ihre Nachricht konnte nicht versendet werden. Bitte versuchen Sie es erneut oder schreiben Sie direkt per E-Mail.', true);
         refresh = response.status === 419;
       } else {
         form.reset();
@@ -111,7 +111,7 @@ document.querySelectorAll('.contact-form').forEach(form => {
         refresh = true;
       }
     } catch {
-      showStatus('Es gab ein Verbindungsproblem. Bitte versuche es noch einmal oder schreibe direkt per E-Mail.', true);
+      showStatus('Es gab ein Verbindungsproblem. Bitte versuchen Sie es noch einmal oder schreiben Sie direkt per E-Mail.', true);
     } finally {
       clearTimeout(timer);
       sending = false;
