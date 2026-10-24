@@ -26,15 +26,16 @@ root directories and watch patterns in the same scoped operation.
 ## Runtime invariants
 
 - Preserve existing volumes, logical databases, users, and website URLs.
-- CMS services remain private. CloudFront uses each origin's Railway domain.
+- CMS services remain private in their per-site rootless networks. CloudFront
+  reaches the protected mx origins configured in web-host-gitops.
 - `/healthz` is the only unauthenticated origin path. Other paths require the
   site's verification header. Never print, commit, or log its value.
 - Origin `/healthz` proxies the private CMS `/railway-health.php` probe. A
   healthy Caddy process alone is insufficient. The probe returns only `ok` or
   `unavailable`, disables caching, and makes read-only database checks.
-- Railway deployment health paths are `/healthz` for all six services, with a
-  90-second startup timeout. CMS Apache aliases that path to the probe file.
-- Set Railway `PORT=80` on the CMS services and `PORT=8080` on origins, matching
+- CMS Apache aliases `/healthz` to the probe file. The preserved Railway
+  fallback also retains `/healthz` and its 90-second startup timeout.
+- In the cold Railway fallback, retain `PORT=80` on CMS and `PORT=8080` on origins, matching
   their actual Apache/Caddy listeners. Private upstreams still use CMS port 80;
   do not change those listeners to accommodate an injected health-check port.
 - Origin readiness depends on its CMS. Recover the CMS first, then retry an
@@ -49,8 +50,8 @@ root directories and watch patterns in the same scoped operation.
 - Wengertsberg's managed theme is in `railway-wengertsberg-wordpress/theme/`.
   Its entrypoint syncs theme files into the persistent volume, but must never
   replace WordPress page content. Read that directory's README before edits.
-- Umami, Vaultwarden, MariaDB, and PostgreSQL are Railway image sources, not
-  deployments controlled by this repository's Dockerfiles.
+- Umami and Vaultwarden use digest-pinned upstream images in web-host-gitops.
+  Their old Railway image sources and database volumes remain stopped fallbacks.
 
 ## Verification
 
@@ -72,8 +73,10 @@ to origin routing, test health, denial without the header, and public website
 responses. Run `sh -n` on POSIX entrypoints and `bash -n` on REDAXO's entrypoint.
 Use `node --test tests/*.test.mjs` for the redirect function.
 
-Production completion requires an explicit terminal Railway deployment state
-and independent endpoint readback. State when authenticated CMS, backup, or
+Production completion requires successful source checks and publication, a
+checked desired-state promotion, a successful host pull, and independent
+canonical HTTPS and protected-origin readiness/denial readback. Never restart
+the cold Railway fallback merely to satisfy an obsolete deployment check. State when authenticated CMS, backup, or
 restore checks were not performed. Never infer that Git contains runtime data.
 
 Dependency updates are reviewed. Keep Caddy and WordPress versions aligned
