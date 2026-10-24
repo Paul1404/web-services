@@ -9,6 +9,13 @@ and their three protected Caddy origins. The Railway project is `web-services`.
 The retired SSH host and old Compose deployment timer are not deployment
 targets. Historical configuration stays in the private archived repository.
 
+The explicitly authorized Wengertsberg pilot uses a new pull deployment on
+mx.pdcd.net, separate from the retired host/timer. Its desired state and host
+runbook live in private Paul1404/web-host-gitops. See docs/wengertsberg-gitops.md.
+Keep Railway's services, volumes and database as a preserved fallback throughout
+pilot verification. Never switch back to stale data after the new site accepts
+writes. Other services retain their existing Railway deployment path.
+
 Before work, inspect status, existing changes, branch divergence, and remotes.
 Read the target directory's README, Dockerfile, and entrypoint. Preserve
 unrelated changes. Do not move build directories without updating Railway's
