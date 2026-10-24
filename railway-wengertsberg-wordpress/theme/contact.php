@@ -16,15 +16,15 @@ function wengertsberg_contact_form(): string {
     }
     ob_start(); ?>
     <form class="contact-form" method="post" action="<?php echo esc_url(rest_url('wengertsberg/v1/contact')); ?>" hidden data-token-url="<?php echo esc_url(rest_url('wengertsberg/v1/contact-token')); ?>" data-send-url="<?php echo esc_url(rest_url('wengertsberg/v1/contact')); ?>">
-        <div class="contact-field"><label for="contact-name">Dein Name</label><input id="contact-name" name="name" autocomplete="name" required minlength="2" maxlength="120"></div>
-        <div class="contact-field"><label for="contact-email">Deine E-Mail-Adresse</label><input id="contact-email" name="email" type="email" autocomplete="email" required maxlength="254"></div>
-        <div class="contact-field"><label for="contact-message">Deine Nachricht</label><textarea id="contact-message" name="message" rows="5" required minlength="10" maxlength="5000"></textarea></div>
+        <div class="contact-field"><label for="contact-name">Ihr Name</label><input id="contact-name" name="name" autocomplete="name" required minlength="2" maxlength="120"></div>
+        <div class="contact-field"><label for="contact-email">Ihre E-Mail-Adresse</label><input id="contact-email" name="email" type="email" autocomplete="email" required maxlength="254"></div>
+        <div class="contact-field"><label for="contact-message">Ihre Nachricht</label><textarea id="contact-message" name="message" rows="5" required minlength="10" maxlength="5000"></textarea></div>
         <div class="contact-trap" aria-hidden="true"><label for="contact-fax">Dieses Feld bitte leer lassen</label><input id="contact-fax" name="contact_company_fax" tabindex="-1" autocomplete="off"></div>
-        <p class="contact-privacy">Deine Angaben werden zur Beantwortung deiner Anfrage verarbeitet. Mehr dazu in der <a href="<?php echo esc_url(home_url('/datenschutzerklaerung/')); ?>">Datenschutzerklärung</a>.</p>
+        <p class="contact-privacy">Ihre Angaben werden zur Beantwortung Ihrer Anfrage verarbeitet. Mehr dazu in der <a href="<?php echo esc_url(home_url('/datenschutzerklaerung/')); ?>">Datenschutzerklärung</a>.</p>
         <button class="contact-submit" type="submit" disabled>Nachricht senden</button>
         <p class="contact-status" role="status" aria-live="polite" tabindex="-1"></p>
     </form>
-    <noscript><p>Bitte nutze die E-Mail-Adresse oder Telefonnummer oben, um Kontakt aufzunehmen.</p></noscript>
+    <noscript><p>Bitte nutzen Sie die E-Mail-Adresse oder Telefonnummer oben, um Kontakt aufzunehmen.</p></noscript>
     <?php return ob_get_clean();
 }
 
@@ -75,25 +75,25 @@ function wengertsberg_contact_send(WP_REST_Request $request): WP_REST_Response {
     $site = wp_parse_url(home_url('/'));
     $expected_origin = $site['scheme'] . '://' . $site['host'] . (isset($site['port']) ? ':' . $site['port'] : '');
     if ($origin !== $expected_origin) {
-        return $fail('Bitte nutze das Kontaktformular auf dieser Website.', 403);
+        return $fail('Bitte nutzen Sie das Kontaktformular auf dieser Website.', 403);
     }
     if (strlen($request->get_body()) > 26000) {
-        return $fail('Deine Nachricht ist zu lang.', 413);
+        return $fail('Ihre Nachricht ist zu lang.', 413);
     }
     $data = $request->get_json_params();
     foreach (['name', 'email', 'message', 'token', 'contact_company_fax'] as $field) {
         if (!is_array($data) || !isset($data[$field]) || !is_string($data[$field])) {
-            return $fail('Bitte fülle Name, E-Mail-Adresse und Nachricht aus.', 400);
+            return $fail('Bitte füllen Sie Name, E-Mail-Adresse und Nachricht aus.', 400);
         }
     }
     $token = $data['token'];
     if (!preg_match('/^(\d{10})\.([a-f0-9]{32})\.([a-f0-9]{64})$/D', $token, $parts)
         || !hash_equals(hash_hmac('sha256', $parts[1] . '.' . $parts[2], wp_salt('nonce')), $parts[3])) {
-        return $fail('Bitte lade das Formular neu und versuche es noch einmal.', 403);
+        return $fail('Bitte laden Sie das Formular neu und versuchen Sie es noch einmal.', 403);
     }
     $age = time() - (int) $parts[1];
     if ($age < 2 || $age > 1800) {
-        return $fail('Bitte lade das Formular neu und versuche es noch einmal.', 403);
+        return $fail('Bitte laden Sie das Formular neu und versuchen Sie es noch einmal.', 403);
     }
     $name = trim($data['name']);
     $email = trim($data['email']);
@@ -101,30 +101,30 @@ function wengertsberg_contact_send(WP_REST_Request $request): WP_REST_Response {
     if ($data['contact_company_fax'] !== '' || mb_strlen($name) < 2 || mb_strlen($name) > 120
         || preg_match('/[\r\n\x00]/', $name . $email) || strlen($email) > 254 || !is_email($email)
         || mb_strlen($message) < 10 || mb_strlen($message) > 5000) {
-        return $fail('Bitte prüfe deinen Namen, deine E-Mail-Adresse und deine Nachricht.', 400);
+        return $fail('Bitte prüfen Sie Ihren Namen, Ihre E-Mail-Adresse und Ihre Nachricht.', 400);
     }
     if (!wengertsberg_contact_ready()) {
-        return $fail('Das Formular ist gerade nicht verfügbar. Bitte schreibe direkt per E-Mail.', 503);
+        return $fail('Das Formular ist gerade nicht verfügbar. Bitte schreiben Sie direkt per E-Mail.', 503);
     }
     $fingerprint = hash_hmac('sha256', wp_json_encode([$name, $email, $message]), wp_salt('auth'));
     $key = 'wengertsberg_contact_send_' . ((int) $parts[1] + 3600) . '_' . hash('sha256', $token);
     $receipt = get_option($key);
     if ($receipt) {
         if (!hash_equals($receipt['fingerprint'], $fingerprint)) {
-            return $fail('Bitte lade das Formular für eine neue Nachricht neu.', 409);
+            return $fail('Bitte laden Sie das Formular für eine neue Nachricht neu.', 409);
         }
         return $receipt['status'] === 'sent'
-            ? wengertsberg_contact_response(['ok' => true, 'message' => 'Vielen Dank! Deine Nachricht wurde versendet.'])
-            : $fail('Deine Nachricht wird bereits versendet. Bitte versuche es gleich noch einmal.', 409);
+            ? wengertsberg_contact_response(['ok' => true, 'message' => 'Vielen Dank! Ihre Nachricht wurde versendet.'])
+            : $fail('Ihre Nachricht wird bereits versendet. Bitte versuchen Sie es gleich noch einmal.', 409);
     }
     if (!add_option($key, ['status' => 'sending', 'fingerprint' => $fingerprint], '', false)) {
-        return $fail('Deine Nachricht wird bereits bearbeitet. Bitte versuche es gleich noch einmal.', 409);
+        return $fail('Ihre Nachricht wird bereits bearbeitet. Bitte versuchen Sie es gleich noch einmal.', 409);
     }
     $email_scope = hash_hmac('sha256', strtolower($email), wp_salt('auth'));
     if (!wengertsberg_contact_slot('minute', 60, 3) || !wengertsberg_contact_slot('hour', 3600, 30)
         || !wengertsberg_contact_slot($email_scope, 3600, 3)) {
         delete_option($key);
-        $response = $fail('Es wurden gerade mehrere Nachrichten gesendet. Bitte versuche es später oder schreibe direkt per E-Mail.', 429);
+        $response = $fail('Es wurden gerade mehrere Nachrichten gesendet. Bitte versuchen Sie es später oder schreiben Sie direkt per E-Mail.', 429);
         $response->header('Retry-After', '60');
         return $response;
     }
@@ -152,10 +152,10 @@ function wengertsberg_contact_send(WP_REST_Request $request): WP_REST_Response {
     }
     if (!$sent) {
         delete_option($key);
-        return $fail('Deine Nachricht konnte nicht versendet werden. Bitte versuche es erneut oder schreibe direkt per E-Mail.', 502);
+        return $fail('Ihre Nachricht konnte nicht versendet werden. Bitte versuchen Sie es erneut oder schreiben Sie direkt per E-Mail.', 502);
     }
     update_option($key, ['status' => 'sent', 'fingerprint' => $fingerprint], false);
-    return wengertsberg_contact_response(['ok' => true, 'message' => 'Vielen Dank! Deine Nachricht wurde versendet.']);
+    return wengertsberg_contact_response(['ok' => true, 'message' => 'Vielen Dank! Ihre Nachricht wurde versendet.']);
 }
 
 add_action('rest_api_init', function () {

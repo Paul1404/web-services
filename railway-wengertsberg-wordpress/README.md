@@ -94,10 +94,11 @@ the error response body.
 
 ## Mobile presentation
 
-The layout changes at 800px. Desktop geometry and full copy stay intact.
-The homepage stores seven paired inline `desktop-copy` / `mobile-copy` spans
-in its existing paragraph blocks. Edit both variants in the WordPress block
-HTML editor when changing these passages; do not reimport the initial seed.
+The layout changes at 800px; desktop geometry stays intact. The current
+approved Sie-form copy is shared by both views in standard WordPress paragraph
+blocks. Edit the published page, not the historical initial seed. Earlier
+paired `desktop-copy` / `mobile-copy` passages were replaced with the shared
+approved text; do not reintroduce the older informal variants.
 The mobile header contact action is hidden on desktop. Below 360px it uses a
 labelled envelope icon so the brand and 44px touch targets still fit.
 
