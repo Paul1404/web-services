@@ -93,8 +93,10 @@ Keep source runtime volumes and the migration write fences intact as fallbacks.
 
 Each CMS build owns analytics/consent.js and its integration. Keep the three
 loader copies identical. The WordPress MU plugin replaces legacy direct Umami
-script tags only in public HTML and excludes logged-in users. REDAXO uses a
-public-only PHP prepend filter, preserving persisted templates and content.
+script tags only in public HTML and excludes logged-in users. REDAXO uses its native OUTPUT_FILTER extension in the owned web_analytics
+addon, preserving persisted templates and content. Its frontend consumes PHP
+output buffers, so auto_prepend_file buffering cannot protect real REDAXO pages.
+The image test must exercise rex_response::sendPage, not a plain PHP echo.
 Analysis and recording require an explicit choice; the loader honors withdrawal,
 DNT and GPC. Strict masking and form exclusions are server-side Umami settings.
 A recorder script's data-mask-level attributes do not configure this version.

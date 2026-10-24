@@ -38,4 +38,10 @@ mkdir -p /var/www/html/site-analytics
 cp /usr/local/share/site-analytics/consent.js /var/www/html/site-analytics/consent.js
 chmod 644 /var/www/html/site-analytics/consent.js
 
+# Install only the owned addon. Persisted templates, other addons and content stay intact.
+mkdir -p /var/www/html/redaxo/src/addons/web_analytics
+cp /usr/local/share/site-analytics/boot.php /usr/local/share/site-analytics/package.yml /var/www/html/redaxo/src/addons/web_analytics/
+php /var/www/html/redaxo/bin/console -q -n package:install web_analytics
+php /var/www/html/redaxo/bin/console -q -n package:activate web_analytics
+
 exec docker-entrypoint.sh "$@"
