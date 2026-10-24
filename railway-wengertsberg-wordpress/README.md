@@ -107,3 +107,22 @@ in a native details disclosure on mobile, restoring those original nodes on
 desktop. Without JavaScript, qualifications remain expanded. Test opening and
 closing with the keyboard, menu links and Escape, and resizing across 800px.
 Verify at 320px and a typical phone width as well as the existing desktop view.
+
+## Search visibility
+
+`theme/seo.php` owns the homepage search title, description, Open Graph metadata
+and one linked JSON-LD graph for WebSite, Organization, Person and WebPage.
+The visible homepage copy and H1 remain editorial content in WordPress. Use
+only published business facts; do not fabricate reviews, opening hours or
+locations. Public contact settings and the WordPress site icon supply the
+organization contact details and logo. Native image blocks receive missing
+width/height from their attachment metadata so optimized image URLs still
+reserve their aspect ratio; keep manually supplied dimensions unchanged.
+
+WordPress core serves `/robots.txt` and `/wp-sitemap.xml`. Keep `blog_public=1`
+for this public site and unpublished legacy placeholders out of the sitemap.
+Verify Googlebot-style HTTP access, canonical URL, metadata uniqueness, JSON
+parsing, logo accessibility, sitemap URLs and real 404 responses after deploy.
+Search Console access, sitemap submission and a recrawl request are separate
+from deployment. Do not claim Google refreshed a result until it is observed;
+a request does not guarantee indexing or a particular ranking/snippet.

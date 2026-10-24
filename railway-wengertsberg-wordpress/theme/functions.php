@@ -1,6 +1,7 @@
 <?php
 defined('ABSPATH') || exit;
 require_once __DIR__ . '/contact.php';
+require_once __DIR__ . '/seo.php';
 
 add_action('after_setup_theme', function () {
     add_theme_support('title-tag');
@@ -32,36 +33,6 @@ add_filter('wp_resource_hints', function ($urls, $relation) {
 function wengertsberg_brand(): void {
     echo '<a class="brand" href="' . esc_url(home_url('/')) . '" aria-label="Wengertsberg, zur Startseite"><span class="brand-letter" aria-hidden="true">W</span><span class="brand-name">WENGERTSBERG<span class="brand-subtitle">TRAINING &amp; CONSULTING</span></span></a>';
 }
-
-add_action('wp_head', function () {
-    if (!is_front_page()) {
-        return;
-    }
-    $description = 'Coaching, Training und Beratung mit Alexander Eckert. Für Führungskräfte, Teams und Organisationen in der Region Schweinfurt.';
-    $image = get_template_directory_uri() . '/' . wengertsberg_asset('share-preview.png');
-    echo '<meta name="description" content="' . esc_attr($description) . '">' . "\n";
-    $properties = [
-        'og:type' => 'website',
-        'og:locale' => 'de_DE',
-        'og:site_name' => 'Wengertsberg',
-        'og:title' => wp_get_document_title(),
-        'og:description' => $description,
-        'og:url' => home_url('/'),
-        'og:image' => esc_url_raw($image),
-        'og:image:type' => 'image/png',
-        'og:image:width' => '1200',
-        'og:image:height' => '630',
-        'og:image:alt' => 'Wengertsberg Training & Consulting, Alexander Eckert',
-    ];
-    foreach ($properties as $property => $content) {
-        echo '<meta property="' . esc_attr($property) . '" content="' . esc_attr($content) . '">' . "\n";
-    }
-});
-
-add_filter('document_title_separator', fn() => '|');
-add_filter('pre_get_document_title', function ($title) {
-    return is_front_page() ? 'Wengertsberg Training und Consulting' : $title;
-});
 
 add_action('customize_register', function ($customizer) {
     $customizer->add_section('wengertsberg_contact', ['title' => 'Wengertsberg Kontakt']);
