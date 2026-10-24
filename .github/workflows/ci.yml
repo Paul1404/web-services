@@ -25,6 +25,7 @@ jobs:
       - name: Validate shell scripts and redirect behavior
         run: |
           bash -n railway-sm-redaxo/entrypoint.sh
+          bash -n scripts/publish-wengertsberg.sh
           for file in railway-*/entrypoint.sh; do
             case "$file" in railway-sm-redaxo/entrypoint.sh) ;; *) sh -n "$file" ;; esac
           done
