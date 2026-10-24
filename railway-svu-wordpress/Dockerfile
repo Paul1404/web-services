@@ -8,6 +8,9 @@ RUN a2dismod mpm_event \
     && a2enmod mpm_prefork \
     && apache2ctl -t
 
+COPY analytics /usr/local/share/site-analytics
+RUN php -l /usr/local/share/site-analytics/99-web-analytics.php
+
 COPY entrypoint.sh /usr/local/bin/svu-wordpress-entrypoint
 COPY railway-health.php /usr/local/share/railway-health.php
 RUN php -l /usr/local/share/railway-health.php

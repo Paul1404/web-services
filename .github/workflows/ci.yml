@@ -33,6 +33,9 @@ jobs:
           node --test tests/*.test.mjs
           node --check railway-wengertsberg-wordpress/theme/site.js
           python3 -m py_compile tests/release-smoke.py
+          for file in railway-*/analytics/consent.js; do node --check "$file"; done
+          cmp railway-svu-wordpress/analytics/consent.js railway-wengertsberg-wordpress/analytics/consent.js
+          cmp railway-svu-wordpress/analytics/consent.js railway-sm-redaxo/analytics/consent.js
           cmp railway-svu-wordpress/railway-health.php railway-wengertsberg-wordpress/railway-health.php
   images:
     runs-on: ubuntu-latest
