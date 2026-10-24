@@ -6,7 +6,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   secrets:
@@ -26,6 +26,7 @@ jobs:
         run: |
           bash -n railway-sm-redaxo/entrypoint.sh
           bash -n scripts/publish-wengertsberg.sh
+          bash -n scripts/publish-websites.sh
           for file in railway-*/entrypoint.sh; do
             case "$file" in railway-sm-redaxo/entrypoint.sh) ;; *) sh -n "$file" ;; esac
           done

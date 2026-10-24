@@ -82,3 +82,7 @@ Compose automation as cleanup.
 and all six image checks passing. Apply these requirements to administrators
 as well; no second-person approval is required. Do not bypass protection to
 ship changes.
+
+SVU and Schlossmuehle also publish checked immutable archives through
+`publish-websites.yml`. Release jobs have no host SSH or runtime credentials.
+Keep source runtime volumes and the migration write fences intact as fallbacks.
