@@ -150,6 +150,17 @@ def cms_checks():
                 stem, extension = filename.rsplit('.', 1)
                 asset = f'/wp-content/themes/wengertsberg/assets/{stem}.{digest}.{extension}'
                 assert request(base, asset)[0] == 200, asset
+    # The consent loader is served locally; backend/authenticated HTML must not
+    # receive a tracker. Use a synthetic public PHP page for the REDAXO filter.
+    assert request(base, '/site-analytics/consent.js')[0] == 200
+    if site == 'sm-redaxo':
+        docker('exec', cms, 'sh', '-c', "printf '%s' '<?php echo \"<html><body>Public fixture</body></html>\";' > /var/www/html/analytics-fixture.php")
+        html = request(base, '/analytics-fixture.php')[2]
+        assert b'/site-analytics/consent.js' in html, 'Public consent gate missing'
+        assert b'/site-analytics/consent.js' not in request(base, '/redaxo/index.php')[2]
+    else:
+        # The client is now logged in, so instrumentation must be absent.
+        assert b'/site-analytics/consent.js' not in request(base)[2]
     modules = docker('exec', cms, 'apache2ctl', '-M').stdout
     assert 'mpm_prefork_module' in modules and 'mpm_event_module' not in modules
     docker('exec', cms, 'sh', '-c', 'mkdir -p /var/www/html/release-sentinel; echo fixture > /var/www/html/release-sentinel/preserved.txt')

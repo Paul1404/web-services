@@ -34,4 +34,8 @@ php /var/www/html/redaxo/bin/console -q -n db:set-connection \
 cp /usr/local/share/railway-health.php /var/www/html/railway-health.php
 chmod 644 /var/www/html/railway-health.php
 
+mkdir -p /var/www/html/site-analytics
+cp /usr/local/share/site-analytics/consent.js /var/www/html/site-analytics/consent.js
+chmod 644 /var/www/html/site-analytics/consent.js
+
 exec docker-entrypoint.sh "$@"

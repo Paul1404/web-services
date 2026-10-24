@@ -4,8 +4,10 @@
 
 ## Scope
 
-This repository contains six live Railway build roots: three CMS containers
-and their three protected Caddy origins. The Railway project is `web-services`.
+This repository contains six build roots: three CMS containers and their three
+protected Caddy origins. Production runs on mx.pdcd.net through the private
+web-host-gitops repository. The Railway web-services project is stopped as a
+cold data fallback; never reconnect or redeploy it during normal releases.
 The retired SSH host and old Compose deployment timer are not deployment
 targets. Historical configuration stays in the private archived repository.
 
@@ -86,3 +88,15 @@ ship changes.
 SVU and Schlossmuehle also publish checked immutable archives through
 `publish-websites.yml`. Release jobs have no host SSH or runtime credentials.
 Keep source runtime volumes and the migration write fences intact as fallbacks.
+
+## Optional analytics
+
+Each CMS build owns analytics/consent.js and its integration. Keep the three
+loader copies identical. The WordPress MU plugin replaces legacy direct Umami
+script tags only in public HTML and excludes logged-in users. REDAXO uses a
+public-only PHP prepend filter, preserving persisted templates and content.
+Analysis and recording require an explicit choice; the loader honors withdrawal,
+DNT and GPC. Strict masking and form exclusions are server-side Umami settings.
+A recorder script's data-mask-level attributes do not configure this version.
+Do not expose authenticated pages or record the Kontor2 membership form.
+Privacy pages are CMS data; snapshot and update them separately from images.

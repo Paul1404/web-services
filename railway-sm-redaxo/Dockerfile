@@ -5,6 +5,10 @@ RUN a2dismod mpm_event \
     && a2enmod mpm_prefork \
     && apache2ctl -t
 
+COPY analytics /usr/local/share/site-analytics
+COPY analytics/analytics.ini /usr/local/etc/php/conf.d/site-analytics.ini
+RUN php -l /usr/local/share/site-analytics/prepend.php
+
 COPY entrypoint.sh /usr/local/bin/redaxo-railway-entrypoint
 COPY railway-health.php /usr/local/share/railway-health.php
 RUN php -l /usr/local/share/railway-health.php
