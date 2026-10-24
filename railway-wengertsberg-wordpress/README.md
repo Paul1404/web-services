@@ -43,12 +43,15 @@ from the administrator's contact setting, never from submitted form fields.
 SMTP credentials are runtime references: `WENGERTSBERG_SMTP_HOST`, `_PORT`,
 `_USER` and `_PASSWORD` (each with the full `WENGERTSBERG_SMTP_` prefix). Use
 authenticated STARTTLS on port 587 with certificate verification enabled.
-The Mailcow app password is restricted to SMTP; no mailbox-reading protocols
-are enabled. Transfer secrets using Railway CLI `variable set --stdin`, never
-through tool arguments, output, commits, or local credential files. Do not
-bootstrap Mailcow's full web prerequisites from PHP CLI: they load the schema
-initializer, whose CLI path re-includes core functions. Scoped maintenance
-must load only the required configuration and function libraries.
+Mail is served by Stalwart on mx.pdcd.net, running Rocky Linux 10 at Contabo.
+Mailcow is retired. Some website clients retain mail.pdcd.net as a compatibility
+alias mapped to the container host gateway. Preserve the working SMTP hostname
+and TLS verification until any endpoint change is explicitly coordinated.
+Amazon SES remains available as an outbound relay. Privacy notices must account
+for sender/recipient addresses and message content processed by AWS when that
+relay is used. Never assume that SES is retired because Mailcow was replaced.
+Keep SMTP credentials in runtime secret references and transfer them only through
+secret-safe tooling. Legacy Mailcow API/CLI maintenance does not apply to Stalwart.
 
 The form checks the request origin, validates field types/lengths and email,
 uses a honeypot and short-lived signed token, and applies atomic global and
