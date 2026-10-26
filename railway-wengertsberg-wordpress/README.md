@@ -169,3 +169,23 @@ technology.
 CI uses the historical public seed only in its guarded, disposable WordPress
 fixture to verify the public design, indexability, review isolation, comparison,
 assets and unchanged editor content. Never run that fixture against live data.
+
+## Quiet analytics settings
+
+The Wengertsberg theme adapts only the shared consent loader's presentation in
+`site.js` and `style.css`; the three owned loader copies remain unchanged and
+identical. When the loader becomes available, hide its unsolicited prompt and
+floating settings button, then expose a text button in the footer. Only an
+explicit click there opens the compact non-modal panel. The adapter must not
+write consent storage, request analytics or infer consent from dismissal.
+Saved consent, expiry, DNT/GPC, route eligibility, recorder masking and withdrawal
+remain the loader's responsibility. New visitors are not tracked unless they
+choose Allow in the footer panel, so fewer statistics are expected.
+
+The footer trigger remains hidden when analytics is unavailable, including the
+excluded review routes. Before adapting successfully, the loader retains its
+original functioning settings UI as a fallback. Closing/rejecting the panel
+must restore keyboard focus without moving the page to the footer unexpectedly.
+Verify fresh-visitor silence, reopening, reject/reload persistence, allow and
+withdrawal with a local tracker stub, keyboard Escape, mobile sizing, and the
+absence of Umami requests before explicit consent.

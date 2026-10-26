@@ -125,3 +125,59 @@ document.querySelectorAll('.contact-form').forEach(form => {
     }
   });
 });
+
+// Keep optional analytics discoverable in the footer without interrupting visits.
+// This adapts presentation only. The shared loader still owns consent, expiry,
+// DNT/GPC, recording eligibility and withdrawal; do not load trackers here.
+(() => {
+  const trigger = document.querySelector('[data-analytics-open]');
+  if (!trigger) return;
+  const connect = () => {
+    const root = document.querySelector('#site-analytics-consent');
+    const api = window.siteAnalyticsConsent;
+    if (!root || !api) return false;
+    const panel = root.querySelector('section');
+    const heading = panel?.querySelector('h2');
+    const text = panel?.querySelector('p');
+    const buttons = panel?.querySelectorAll('nav button');
+    if (!panel || !heading || !text || buttons?.length !== 3) return false;
+    const [reject, allow, close] = buttons;
+    panel.id = 'wengertsberg-analytics-panel';
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-labelledby', 'wengertsberg-analytics-title');
+    panel.setAttribute('aria-describedby', 'wengertsberg-analytics-description');
+    heading.id = 'wengertsberg-analytics-title';
+    heading.textContent = 'Darf ich die Website auswerten?';
+    text.id = 'wengertsberg-analytics-description';
+    text.textContent = 'Optional: Besuche zählen und maskierte Klicks und Scrollbewegungen aufzeichnen. Formulare bleiben ausgeschlossen.';
+    reject.dataset.consentChoice = 'reject';
+    allow.dataset.consentChoice = 'allow';
+    allow.textContent = 'Erlauben';
+    close.dataset.consentClose = '';
+    close.textContent = '×';
+    close.setAttribute('aria-label', 'Analyse-Einstellungen schließen');
+    // No choice is implied by hiding the unsolicited prompt. Existing saved
+    // choices continue to be evaluated by the loader, with no storage writes here.
+    panel.hidden = true;
+    root.classList.add('is-wengertsberg-consent');
+    trigger.hidden = false;
+    let openedHere = false;
+    trigger.addEventListener('click', () => {
+      openedHere = true;
+      if (panel.hidden) api.open();
+      else reject.focus();
+    });
+    new MutationObserver(() => {
+      trigger.setAttribute('aria-expanded', String(!panel.hidden));
+      if (panel.hidden && openedHere) {
+        openedHere = false;
+        trigger.focus({ preventScroll: true });
+      }
+    }).observe(panel, { attributes: true, attributeFilter: ['hidden'] });
+    return true;
+  };
+  if (!connect()) {
+    const observer = new MutationObserver(() => { if (connect()) observer.disconnect(); });
+    observer.observe(document.body, { childList: true });
+  }
+})();
