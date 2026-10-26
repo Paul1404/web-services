@@ -77,6 +77,9 @@
     setView('design', true);
     const target = document.querySelector(button.dataset.reviewJump);
     if (target) {
+      const destination = new URL(location.href);
+      destination.hash = button.dataset.reviewJump;
+      history.replaceState(null, '', destination.href);
       target.setAttribute('tabindex', '-1');
       target.scrollIntoView({ behavior: reducedMotion.matches ? 'auto' : 'smooth', block: 'start' });
       target.focus({ preventScroll: true });
