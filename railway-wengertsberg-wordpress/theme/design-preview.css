@@ -136,7 +136,7 @@ body.design-preview { padding-top: var(--preview-reviewbar-height, 126px); }
 .preview-reviewbar .preview-review-intro { display: block; }
 .preview-review-intro strong { display: block; color: var(--ink); font-size: 16px; line-height: 1.4; font-weight: 600; }
 .preview-review-intro p { margin: 4px 0 0; font-size: 12px; line-height: 1.5; }
-.preview-reviewbar .preview-review-controls { display: grid; gap: 8px; min-width: 440px; }
+.preview-reviewbar .preview-review-controls { display: grid; gap: 8px; min-width: 440px; justify-content: stretch; }
 .preview-view-switch { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .preview-reviewbar .preview-view-switch button { min-height: 44px; border: 1px solid #aebcaf; padding: 8px 14px; background: #fff; color: var(--forest); font-size: 13px; font-weight: 600; line-height: 1.3; text-decoration: none; }
 .preview-reviewbar .preview-view-switch button + button { border-left: 0; }
