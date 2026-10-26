@@ -141,10 +141,15 @@ homepage retains its existing stylesheet, markup and search/share metadata.
 original content when required groups are missing. Its extra CSS/JS have hashed
 asset paths. Keep all editorial copy, real media and contact settings in WordPress.
 
-The review toolbar links to the canonical page, records outstanding customer
-story/logo approvals, and opens a clearly labelled, non-interactive consent
-visual. The actual analytics loader excludes query-string views, so this route
-never starts analytics. The existing contact form keeps its real REST/SMTP flow;
+The fixed review controls explain the ideas to Alex and switch between the
+proposal and a lazily loaded same-origin comparison at `/?vergleich=1`.
+Both review URLs are noindex and excluded by the actual analytics loader.
+The controls also open explanatory section jumps, a real anonymized CMS case
+with explicitly unanswered story questions, a neutral placeholder-logo demo
+(static row or pausable band), and a labelled non-interactive consent visual.
+No placeholder represents a real customer. The logo band respects reduced motion,
+hover and keyboard focus; its duplicate track is hidden from assistive technology.
+Neither review view starts analytics. The existing contact form keeps its real REST/SMTP flow;
 reviewing the design must not send unsolicited mail. Do not fabricate logos,
 client outcomes or working-session photographs to fill empty content slots.
 

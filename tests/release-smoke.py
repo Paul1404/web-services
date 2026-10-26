@@ -157,6 +157,11 @@ def cms_checks():
             before = docker('exec', cms, 'php', '-r', snapshot).stdout
             preview_status, _, preview = request(base, '/?entwurf=2')
             assert preview_status == 200 and b'preview-hero-grid' in preview, 'Review route did not render its layout'
+            assert b'data-review-view="original"' in preview and b'id="preview-design-panel"' in preview
+            assert not re.search(rb'<iframe[^>]+\ssrc=', preview), 'Comparison loaded before being selected'
+            comparison_status, _, comparison = request(base, '/?vergleich=1')
+            assert comparison_status == 200 and b'noindex' in comparison
+            assert b'preview-hero-grid' not in comparison and b'design-preview.' not in comparison
             assert b'noindex' in preview and b'design-preview.' in preview
             assert b'preview-choice-example' in preview and b'disabled' in preview
             assert not re.search(rb'contact-details[^>]*>\s*<p>\s*</p>', preview), 'Shortcode wrapper created an empty layout row'
