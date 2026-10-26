@@ -3,6 +3,7 @@
 import base64
 import json
 import pathlib
+import re
 import subprocess
 import sys
 import time
@@ -158,6 +159,7 @@ def cms_checks():
             assert preview_status == 200 and b'preview-hero-grid' in preview, 'Review route did not render its layout'
             assert b'noindex' in preview and b'design-preview.' in preview
             assert b'preview-choice-example' in preview and b'disabled' in preview
+            assert not re.search(rb'contact-details[^>]*>\s*<p>\s*</p>', preview), 'Shortcode wrapper created an empty layout row'
             assert docker('exec', cms, 'php', '-r', snapshot).stdout == before, 'Review rendering changed editor content'
             assert b'preview-hero-grid' not in request(base, '/?entwurf=other')[2]
     # The consent loader is served locally; backend/authenticated HTML must not

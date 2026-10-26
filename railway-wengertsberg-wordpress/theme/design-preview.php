@@ -32,7 +32,7 @@ function wengertsberg_preview_find(array $blocks, string $class): ?array {
     return null;
 }
 function wengertsberg_preview_render(array $blocks): string {
-    return implode("\n", array_map(fn($block) => do_shortcode(render_block($block)), $blocks));
+    return implode("\n", array_map(fn($block) => do_shortcode(shortcode_unautop(render_block($block))), $blocks));
 }
 function wengertsberg_preview_heading(array $blocks): array {
     foreach ($blocks as $block) {
