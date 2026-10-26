@@ -5,22 +5,30 @@ function wengertsberg_design_preview(): bool {
     return is_front_page() && isset($_GET['entwurf']) && is_string($_GET['entwurf']) && $_GET['entwurf'] === '2';
 }
 
+function wengertsberg_design_comparison(): bool {
+    return is_front_page() && isset($_GET['vergleich']) && is_string($_GET['vergleich']) && $_GET['vergleich'] === '1';
+}
+
+function wengertsberg_direction_b(): bool {
+    return is_front_page() && (!wengertsberg_design_comparison() || wengertsberg_design_preview());
+}
+
 add_filter('body_class', function ($classes) {
+    if (wengertsberg_direction_b()) $classes[] = 'direction-b';
     if (wengertsberg_design_preview()) $classes[] = 'design-preview';
     return $classes;
 });
 add_filter('wp_robots', function ($robots) {
-    $comparison = is_front_page() && isset($_GET['vergleich']) && is_string($_GET['vergleich']) && $_GET['vergleich'] === '1';
-    if (wengertsberg_design_preview() || $comparison) {
+    if (wengertsberg_design_preview() || wengertsberg_design_comparison()) {
         unset($robots['index']);
         $robots['noindex'] = true;
     }
     return $robots;
 });
 add_action('wp_enqueue_scripts', function () {
-    if (!wengertsberg_design_preview()) return;
+    if (!wengertsberg_direction_b()) return;
     wp_enqueue_style('wengertsberg-design-preview', get_template_directory_uri() . '/' . wengertsberg_asset('design-preview.css'), ['wengertsberg'], null);
-    wp_enqueue_script('wengertsberg-design-preview', get_template_directory_uri() . '/' . wengertsberg_asset('design-preview.js'), ['wengertsberg'], null, true);
+    if (wengertsberg_design_preview()) wp_enqueue_script('wengertsberg-design-preview', get_template_directory_uri() . '/' . wengertsberg_asset('design-preview.js'), ['wengertsberg'], null, true);
 });
 
 function wengertsberg_preview_find(array $blocks, string $class): ?array {
@@ -43,10 +51,11 @@ function wengertsberg_preview_heading(array $blocks): array {
 }
 
 // Direction B uses the supplied desktop/mobile reference. Its headline and
-// subline are preview-only; body copy and media still come from published blocks.
+// subline are shared by the public homepage and review; other copy/media
+// still come from published blocks.
 // Never import the seed, write CMS data or invent client claims for this view.
 add_filter('the_content', function ($content) {
-    if (!wengertsberg_design_preview() || !in_the_loop() || !is_main_query()) return $content;
+    if (!wengertsberg_direction_b() || !in_the_loop() || !is_main_query()) return $content;
     $post = get_post();
     if (!$post || $post->post_status !== 'publish') return $content;
     $blocks = parse_blocks($post->post_content);
@@ -88,7 +97,9 @@ add_filter('the_content', function ($content) {
         $contact_html = str_replace($contact_question, '', $contact_html);
         $contact_html = preg_replace('/<h2\b[^>]*>.*?<\/h2>/s', '<p class="preview-contact-label">Kontakt</p><h2>' . esc_html($contact_question) . '</h2>', $contact_html, 1);
     }
+    $review = wengertsberg_design_preview();
     ob_start(); ?>
+    <?php if ($review): ?>
     <aside class="preview-reviewbar" aria-label="Entwurf und Ideen für Alex">
         <div class="wrap preview-reviewbar-inner">
             <div class="preview-review-intro"><strong>Für Alex: Richtung B</strong><p>Desktop- und Handyvorlage in WordPress umgesetzt.</p></div>
@@ -102,6 +113,7 @@ add_filter('the_content', function ($content) {
         </div>
     </aside>
     <section id="preview-original-panel" class="preview-original-panel" hidden aria-label="Bisherige Website zum Vergleich"><iframe title="Bisherige Wengertsberg Website" data-original-src="<?php echo esc_url(add_query_arg('vergleich', '1', home_url('/'))); ?>" referrerpolicy="no-referrer"></iframe></section>
+    <?php endif; ?>
     <div id="preview-design-panel">
     <section class="preview-hero" aria-label="Alexander Eckert">
         <div class="wrap preview-hero-grid">
@@ -128,6 +140,7 @@ add_filter('the_content', function ($content) {
     <section id="referenzen" class="preview-references section"><div class="wrap preview-reference-grid"><div class="preview-section-heading"><span class="preview-section-number" aria-hidden="true">04</span><?php echo wengertsberg_preview_render([$reference_heading]); ?></div><div class="reference-intro"><?php echo wengertsberg_preview_render($reference_body); ?></div><?php echo wengertsberg_preview_render([$groups['reference-list']]); ?></div></section>
     <section id="kontakt" class="contact section"><div class="wrap contact-grid"><?php echo $contact_html . wengertsberg_preview_render([$groups['contact-details']]); ?><div class="preview-contact-place"><?php echo wengertsberg_preview_render([$groups['about-place']]); ?></div></div></section>
     </div>
+    <?php if ($review): ?>
     <dialog class="preview-dialog" id="preview-notes" aria-labelledby="preview-notes-title">
         <button class="preview-dialog-close" type="button" data-close-preview aria-label="Hinweise schließen">×</button>
         <h2 id="preview-notes-title">Was Richtung B verändert</h2>
@@ -164,6 +177,7 @@ add_filter('the_content', function ($content) {
         <a href="<?php echo esc_url(home_url('/datenschutzerklaerung/')); ?>">Mehr dazu in der Datenschutzerklärung</a>
         <p class="preview-example-note">Im Entwurf wird keine Analyse gestartet. Die Auswahl oben zeigt nur die Gestaltung.</p>
     </dialog>
+    <?php endif; ?>
     <?php
     return wp_filter_content_tags(ob_get_clean(), 'the_content');
 }, 20);

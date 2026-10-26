@@ -12,6 +12,7 @@ update_option('siteurl', getenv('RELEASE_URL'));
 update_option('home', getenv('RELEASE_URL'));
 if (getenv('RELEASE_THEME') === 'wengertsberg') {
     switch_theme('wengertsberg');
+    update_option('blog_public', 1); // Exercise production indexability in this isolated fixture.
 }
 $content = '<!-- wp:paragraph --><p>Release fixture content</p><!-- /wp:paragraph -->';
 if (getenv('RELEASE_THEME') === 'wengertsberg') {

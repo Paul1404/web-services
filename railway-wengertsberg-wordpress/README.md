@@ -132,35 +132,40 @@ Search Console access, sitemap submission and a recrawl request are separate
 from deployment. Do not claim Google refreshed a result until it is observed;
 a request does not guarantee indexing or a particular ranking/snippet.
 
-## Editorial review view
+## Public Direction B and review view
 
-`/?entwurf=2` is a public, noindex review route. It reads and rearranges the
-published front page blocks without changing their stored content. The normal
-homepage retains its existing stylesheet, markup and search/share metadata.
-`design-preview.php` expects the managed group classes and falls back to the
-original content when required groups are missing. Its extra CSS/JS have hashed
-asset paths. The supplied Direction B desktop/mobile PDFs govern this review:
-forest-green hero, sans-serif headings, gold subline and numbered sections,
-two-column service cards, four reference cards, and a light form on green.
-Mobile stacks the hero copy/button before a full-width portrait and places the
-approach copy before its photograph. The review-only headline, subline and CTA
-come from that supplied design; the existing introduction moves to About with
-the headline phrase removed there to avoid repetition. The contact question
-becomes its heading. Do not write those presentation changes back into the CMS.
-All other editorial copy, real media and contact settings remain in WordPress.
+Direction B is the approved public homepage. Its renderer in `design-preview.php`
+rearranges the existing published front page blocks without changing stored
+content. The historical filenames are kept so release assets and the review
+route share one template and stylesheet. `direction-b` scopes the public skin;
+`design-preview` additionally marks the review controls. Search/share metadata,
+canonical URLs and contact settings retain their existing values.
 
-The fixed review controls explain the ideas to Alex and switch between the
-proposal and a lazily loaded same-origin comparison at `/?vergleich=1`.
-Both review URLs are noindex and excluded by the actual analytics loader.
-The controls also open explanatory section jumps, a real anonymized CMS case
-with explicitly unanswered story questions, a neutral placeholder-logo demo
-(static row or pausable band), and a labelled non-interactive consent visual.
-No placeholder represents a real customer. The logo band respects reduced motion,
-hover and keyboard focus; its duplicate track is hidden from assistive technology.
-Neither review view starts analytics. The existing contact form keeps its real REST/SMTP flow;
-reviewing the design must not send unsolicited mail. Do not fabricate logos,
-client outcomes or working-session photographs to fill empty content slots.
+The supplied Direction B desktop/mobile PDFs govern the design: forest-green
+hero, sans-serif headings, gold subline and numbered sections, two-column service
+cards, four reference cards, and a light form on green. Mobile stacks the hero
+copy/button before a full-width portrait and places the approach copy before its
+photograph. The headline, subline and CTA come from that approved design. The
+existing introduction moves to About with the headline phrase removed there to
+avoid repetition; the contact question becomes its heading. Other editorial copy,
+real media and contact settings stay in WordPress. Never reimport the seed.
+Missing required managed groups fall back to the original page content.
+
+`/?entwurf=2` retains the public, noindex review with comparison controls,
+explanatory section jumps, a real anonymized CMS case with unanswered story
+questions, placeholder logos and a labelled non-interactive consent visual.
+Only this route loads the review script and renders the controls/dialogs.
+The canonical homepage must never include review UI, customer placeholders or
+example consent buttons. `/?vergleich=1` keeps the previous layout as a noindex
+comparison. Both review URLs remain excluded by the actual analytics loader;
+the canonical page retains its existing real consent flow.
+
+The existing contact form keeps its real REST/SMTP flow. Reviewing the design
+must not send unsolicited mail. Do not fabricate logos, client outcomes or
+working-session photographs. The optional review logo band respects reduced
+motion, hover and keyboard focus; its duplicate track is hidden from assistive
+technology.
 
 CI uses the historical public seed only in its guarded, disposable WordPress
-fixture to exercise the route, asset availability, canonical isolation and editor
-content integrity. Never run that fixture against the live database.
+fixture to verify the public design, indexability, review isolation, comparison,
+assets and unchanged editor content. Never run that fixture against live data.
