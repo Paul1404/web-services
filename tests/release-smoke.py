@@ -152,7 +152,13 @@ def cms_checks():
                 stem, extension = filename.rsplit('.', 1)
                 asset = f'/wp-content/themes/wengertsberg/assets/{stem}.{digest}.{extension}'
                 assert request(base, asset)[0] == 200, asset
-            assert b'preview-hero-grid' not in body, 'Draft layout escaped onto the canonical homepage'
+            assert b'preview-hero-grid' in body and b'direction-b' in body, 'Approved homepage layout missing'
+            assert b'<h1><span>Vom Shopfloor</span> <span>bis in die</span> <span>Vorstandsetage.</span></h1>' in body
+            assert b'noindex' not in body, 'Public homepage must remain indexable'
+            for review_only in [b'preview-reviewbar', b'<dialog', b'<iframe', b'Firmenlogo', b'design-preview.js']:
+                assert review_only not in body, 'Review-only markup or script escaped onto the public homepage'
+            assert not re.search(rb'<script[^>]+design-preview', body), 'Review script loaded on public homepage'
+            assert b'/#kontakt' in body, 'Public CTA must point at the live contact section'
             snapshot = 'require "/var/www/html/wp-load.php"; echo hash("sha256", get_post((int)get_option("page_on_front"))->post_content);'
             before = docker('exec', cms, 'php', '-r', snapshot).stdout
             preview_status, _, preview = request(base, '/?entwurf=2')
@@ -160,7 +166,7 @@ def cms_checks():
             assert b'data-review-view="original"' in preview and b'id="preview-design-panel"' in preview
             assert b'<h1><span>Vom Shopfloor</span> <span>bis in die</span> <span>Vorstandsetage.</span></h1>' in preview
             assert b'Menschlich. Wirksam. Mit Freude.' in preview and b'preview-section-number' in preview
-            assert b'preview-hero-subline' not in body, 'Direction B headline treatment escaped the review route'
+            assert b'preview-hero-subline' in body, 'Approved headline treatment missing on the public homepage'
             assert not re.search(rb'<iframe[^>]+\ssrc=', preview), 'Comparison loaded before being selected'
             comparison_status, _, comparison = request(base, '/?vergleich=1')
             assert comparison_status == 200 and b'noindex' in comparison
@@ -169,7 +175,9 @@ def cms_checks():
             assert b'preview-choice-example' in preview and b'disabled' in preview
             assert not re.search(rb'contact-details[^>]*>\s*<p>\s*</p>', preview), 'Shortcode wrapper created an empty layout row'
             assert docker('exec', cms, 'php', '-r', snapshot).stdout == before, 'Review rendering changed editor content'
-            assert b'preview-hero-grid' not in request(base, '/?entwurf=other')[2]
+            for query in ['/?entwurf=other', '/?entwurf%5B%5D=2']:
+                ordinary = request(base, query)[2]
+                assert b'preview-hero-grid' in ordinary and b'preview-reviewbar' not in ordinary
     # The consent loader is served locally; backend/authenticated HTML must not
     # receive a tracker. Use a synthetic public PHP page for the REDAXO filter.
     assert request(base, '/site-analytics/consent.js')[0] == 200
