@@ -42,8 +42,9 @@ function wengertsberg_preview_heading(array $blocks): array {
     return [];
 }
 
-// Rearrange the published blocks for review. No seed import, copied editorial
-// text, database write, invented testimonial, customer logo or new media asset.
+// Direction B uses the supplied desktop/mobile reference. Its headline and
+// subline are preview-only; body copy and media still come from published blocks.
+// Never import the seed, write CMS data or invent client claims for this view.
 add_filter('the_content', function ($content) {
     if (!wengertsberg_design_preview() || !in_the_loop() || !is_main_query()) return $content;
     $post = get_post();
@@ -55,14 +56,11 @@ add_filter('the_content', function ($content) {
         if (!$groups[$class]) return $content;
     }
     $hero = $groups['hero-copy']['innerBlocks'];
-    $kicker = wengertsberg_preview_find($hero, 'intro-label');
     $description = wengertsberg_preview_find($hero, 'hero-description');
-    $location = wengertsberg_preview_find($hero, 'hero-location');
-    $heading = wengertsberg_preview_heading($hero);
-    if (!$kicker || !$description || !$location || !$heading) return $content;
+    if (!$description) return $content;
     $description_html = wengertsberg_preview_render([$description]);
-    $description_html = str_replace('vom Shopfloor bis in die Vorstandsetage', '<strong class="preview-emphasis">vom Shopfloor bis in die Vorstandsetage</strong>', $description_html);
-    $button = array_values(array_filter($hero, fn($b) => $b['blockName'] === 'core/html'));
+    // This phrase is the reference hero headline, so it no longer repeats here.
+    $description_html = str_replace(', vom Shopfloor bis in die Vorstandsetage', '', $description_html);
     $about_heading = wengertsberg_preview_heading($groups['about-copy']['innerBlocks']);
     $about_body = array_values(array_filter($groups['about-copy']['innerBlocks'], fn($b) => $b !== $about_heading));
     $service_children = $groups['services']['innerBlocks'][0]['innerBlocks'] ?? [];
@@ -79,13 +77,24 @@ add_filter('the_content', function ($content) {
             break;
         }
     }
+    $reference_intro = $groups['reference-intro']['innerBlocks'];
+    $reference_heading = wengertsberg_preview_heading($reference_intro);
+    if (!$reference_heading) return $content;
+    $reference_body = array_values(array_filter($reference_intro, fn($b) => $b !== $reference_heading));
+    $contact_html = wengertsberg_preview_render([$groups['contact-copy']]);
+    $contact_question = 'Sie haben eine Frage oder ein konkretes Anliegen?';
+    // Promote the existing opening question without duplicating the paragraph.
+    if (str_contains(wp_strip_all_tags($contact_html), $contact_question)) {
+        $contact_html = str_replace($contact_question, '', $contact_html);
+        $contact_html = preg_replace('/<h2\b[^>]*>.*?<\/h2>/s', '<p class="preview-contact-label">Kontakt</p><h2>' . esc_html($contact_question) . '</h2>', $contact_html, 1);
+    }
     ob_start(); ?>
     <aside class="preview-reviewbar" aria-label="Entwurf und Ideen für Alex">
         <div class="wrap preview-reviewbar-inner">
-            <div class="preview-review-intro"><strong>Für Alex: Entwurf und Ideen</strong><p>Ansichten und neue Bausteine ausprobieren.</p></div>
+            <div class="preview-review-intro"><strong>Für Alex: Richtung B</strong><p>Desktop- und Handyvorlage in WordPress umgesetzt.</p></div>
             <div class="preview-review-controls">
                 <div class="preview-view-switch" role="group" aria-label="Websiteansicht">
-                    <button type="button" data-review-view="design" aria-pressed="true" aria-controls="preview-design-panel">Unser Vorschlag</button>
+                    <button type="button" data-review-view="design" aria-pressed="true" aria-controls="preview-design-panel">Richtung B</button>
                     <button type="button" data-review-view="original" aria-pressed="false" aria-controls="preview-original-panel">Bisherige Website</button>
                 </div>
                 <nav class="preview-review-ideas" aria-label="Ideen ansehen"><button type="button" data-preview-notes>Änderungen</button><button type="button" data-preview-cases>Kunden &amp; Logos</button><button type="button" data-preview-consent>Analysehinweis</button></nav>
@@ -96,37 +105,37 @@ add_filter('the_content', function ($content) {
     <div id="preview-design-panel">
     <section class="preview-hero" aria-label="Alexander Eckert">
         <div class="wrap preview-hero-grid">
-            <div class="preview-kicker"><?php echo wengertsberg_preview_render([$kicker]); ?></div>
-            <div class="preview-hero-title"><?php echo wengertsberg_preview_render([$heading]); ?></div>
+            <div class="preview-kicker"><p class="intro-label">Alexander Eckert: Coaching, Training und Beratung</p></div>
+            <div class="preview-hero-title"><h1><span>Vom Shopfloor</span> <span>bis in die</span> <span>Vorstandsetage.</span></h1></div>
+            <div class="preview-introduction"><p class="preview-hero-subline">Menschlich. Wirksam. Mit Freude.</p><a class="button" href="<?php echo esc_url(home_url('/#kontakt')); ?>">Ins Gespräch kommen</a></div>
             <div class="preview-portrait"><?php echo wengertsberg_preview_render([$groups['hero-portrait']]); ?></div>
-            <div class="preview-introduction"><?php echo $description_html . wengertsberg_preview_render($button) . wengertsberg_preview_render([$location]); ?></div>
         </div>
     </section>
     <section id="ueber-mich" class="preview-about section">
         <div class="wrap preview-about-grid">
-            <div class="preview-section-heading"><p class="preview-eyebrow">Industriepraxis und Ehrenamt</p><?php echo wengertsberg_preview_render([$about_heading]); ?></div>
-            <div class="about-copy"><?php echo wengertsberg_preview_render($about_body); ?></div>
+            <div class="preview-section-heading"><span class="preview-section-number" aria-hidden="true">01</span><?php echo wengertsberg_preview_render([$about_heading]); ?></div>
+            <div class="about-copy"><div class="preview-about-introduction"><?php echo $description_html; ?></div><?php echo wengertsberg_preview_render($about_body); ?></div>
         </div>
     </section>
     <section id="leistungen" class="preview-services section">
-        <div class="wrap preview-services-grid"><div class="preview-section-heading"><?php echo wengertsberg_preview_render($service_intro); ?></div><?php echo wengertsberg_preview_render([$groups['service-list']]); ?></div>
+        <div class="wrap preview-services-grid"><div class="preview-section-heading"><span class="preview-section-number" aria-hidden="true">02</span><?php echo wengertsberg_preview_render([$service_intro[0]]); ?></div><div class="preview-services-intro"><?php echo wengertsberg_preview_render(array_slice($service_intro, 1)); ?></div><?php echo wengertsberg_preview_render([$groups['service-list']]); ?></div>
     </section>
     <section id="mein-ansatz" class="preview-approach section">
-        <div class="wrap"><?php echo wengertsberg_preview_render([$approach_heading]); ?><div class="preview-approach-lead"><?php echo wengertsberg_preview_render([$approach_paragraphs[0]]); ?></div>
-            <div class="preview-approach-story"><?php echo wengertsberg_preview_render([$groups['approach-photo']]); ?><div class="preview-approach-text"><?php echo wengertsberg_preview_render([$approach_paragraphs[1]]); ?></div></div>
+        <div class="wrap preview-approach-grid"><div class="preview-section-heading"><span class="preview-section-number" aria-hidden="true">03</span><?php echo wengertsberg_preview_render([$approach_heading]); ?></div><div class="preview-approach-lead"><?php echo wengertsberg_preview_render([$approach_paragraphs[0]]); ?></div>
+            <?php echo wengertsberg_preview_render([$groups['approach-photo']]); ?><div class="preview-approach-text"><?php echo wengertsberg_preview_render([$approach_paragraphs[1]]); ?></div>
         </div>
     </section>
-    <section id="referenzen" class="preview-references section"><div class="wrap preview-reference-grid"><?php echo wengertsberg_preview_render([$groups['reference-intro'], $groups['reference-list']]); ?></div></section>
-    <section id="kontakt" class="contact section"><div class="wrap contact-grid"><?php echo wengertsberg_preview_render([$groups['contact-copy'], $groups['contact-details']]); ?><div class="preview-contact-place"><?php echo wengertsberg_preview_render([$groups['about-place']]); ?></div></div></section>
+    <section id="referenzen" class="preview-references section"><div class="wrap preview-reference-grid"><div class="preview-section-heading"><span class="preview-section-number" aria-hidden="true">04</span><?php echo wengertsberg_preview_render([$reference_heading]); ?></div><div class="reference-intro"><?php echo wengertsberg_preview_render($reference_body); ?></div><?php echo wengertsberg_preview_render([$groups['reference-list']]); ?></div></section>
+    <section id="kontakt" class="contact section"><div class="wrap contact-grid"><?php echo $contact_html . wengertsberg_preview_render([$groups['contact-details']]); ?><div class="preview-contact-place"><?php echo wengertsberg_preview_render([$groups['about-place']]); ?></div></div></section>
     </div>
     <dialog class="preview-dialog" id="preview-notes" aria-labelledby="preview-notes-title">
         <button class="preview-dialog-close" type="button" data-close-preview aria-label="Hinweise schließen">×</button>
-        <h2 id="preview-notes-title">Was wir ändern würden</h2>
-        <p>Der Entwurf zeigt, wie Alex und seine Erfahrung stärker sichtbar werden können. Die freigegebenen Texte und vorhandenen Fotos bleiben die Grundlage.</p>
+        <h2 id="preview-notes-title">Was Richtung B verändert</h2>
+        <p>Diese Vorschau folgt der gelieferten Richtung B für Desktop und Handy: grüner Einstieg, goldene Akzente, serifenlose Schrift und nummerierte Abschnitte. Die bisherige Website bleibt zum Vergleich verfügbar.</p>
         <div class="preview-change-list">
-            <div><h3>Alex früher und größer zeigen</h3><p>Das Porträt steht direkt am Einstieg. Die Passage vom Shopfloor bis in die Vorstandsetage bekommt mehr Gewicht.</p><button type="button" data-review-jump="#main">Einstieg ansehen</button></div>
-            <div><h3>Industriepraxis und Ehrenamt hervorheben</h3><p>Die Erfahrung aus Betrieb und Verein wird in einem eigenen Abschnitt zusammengeführt.</p><button type="button" data-review-jump="#ueber-mich">Abschnitt ansehen</button></div>
-            <div><h3>Leistungen leichter überblicken</h3><p>Ruhige Zeilen und eine klarere Gewichtung ersetzen das wiederholte Kartenraster.</p><button type="button" data-review-jump="#leistungen">Leistungen ansehen</button></div>
+            <div><h3>Einstieg aus Richtung B</h3><p>Die Überschrift „Vom Shopfloor bis in die Vorstandsetage.“ steht mit goldener Unterzeile auf Grün. Am Rechner steht das Porträt rechts, am Handy folgt es unter dem Kontaktbutton.</p><button type="button" data-review-jump="#main">Einstieg ansehen</button></div>
+            <div><h3>Über mich auf hellem Hintergrund</h3><p>Der persönliche Einstieg und die Erfahrung aus Betrieb und Verein stehen zusammen im hellen Abschnitt „Über mich“. Die Qualifikationen lassen sich auf dem Handy aufklappen.</p><button type="button" data-review-jump="#ueber-mich">Abschnitt ansehen</button></div>
+            <div><h3>Leistungen leichter überblicken</h3><p>Die Leistungen stehen wie in der Vorlage in zwei Spalten, am Handy untereinander. Die Referenzen folgen als vier kleinere Karten. Linien und Abschnittsnummern geben Orientierung.</p><button type="button" data-review-jump="#leistungen">Leistungen ansehen</button></div>
             <div><h3>Kundenarbeit greifbar machen</h3><p>Kundengeschichten und Firmenlogos kommen mit echten Inhalten und Freigaben dazu. Der nächste Button zeigt den möglichen Aufbau.</p><button type="button" data-open-cases>Kundengeschichten und Logos ansehen</button></div>
         </div>
     </dialog>

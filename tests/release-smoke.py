@@ -158,6 +158,9 @@ def cms_checks():
             preview_status, _, preview = request(base, '/?entwurf=2')
             assert preview_status == 200 and b'preview-hero-grid' in preview, 'Review route did not render its layout'
             assert b'data-review-view="original"' in preview and b'id="preview-design-panel"' in preview
+            assert b'<h1><span>Vom Shopfloor</span> <span>bis in die</span> <span>Vorstandsetage.</span></h1>' in preview
+            assert b'Menschlich. Wirksam. Mit Freude.' in preview and b'preview-section-number' in preview
+            assert b'preview-hero-subline' not in body, 'Direction B headline treatment escaped the review route'
             assert not re.search(rb'<iframe[^>]+\ssrc=', preview), 'Comparison loaded before being selected'
             comparison_status, _, comparison = request(base, '/?vergleich=1')
             assert comparison_status == 200 and b'noindex' in comparison
