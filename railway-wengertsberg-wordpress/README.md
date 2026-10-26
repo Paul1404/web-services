@@ -139,7 +139,15 @@ published front page blocks without changing their stored content. The normal
 homepage retains its existing stylesheet, markup and search/share metadata.
 `design-preview.php` expects the managed group classes and falls back to the
 original content when required groups are missing. Its extra CSS/JS have hashed
-asset paths. Keep all editorial copy, real media and contact settings in WordPress.
+asset paths. The supplied Direction B desktop/mobile PDFs govern this review:
+forest-green hero, sans-serif headings, gold subline and numbered sections,
+two-column service cards, four reference cards, and a light form on green.
+Mobile stacks the hero copy/button before a full-width portrait and places the
+approach copy before its photograph. The review-only headline, subline and CTA
+come from that supplied design; the existing introduction moves to About with
+the headline phrase removed there to avoid repetition. The contact question
+becomes its heading. Do not write those presentation changes back into the CMS.
+All other editorial copy, real media and contact settings remain in WordPress.
 
 The fixed review controls explain the ideas to Alex and switch between the
 proposal and a lazily loaded same-origin comparison at `/?vergleich=1`.
