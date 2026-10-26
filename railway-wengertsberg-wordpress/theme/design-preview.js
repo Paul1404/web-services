@@ -60,7 +60,7 @@
   [['[data-preview-notes]', '#preview-notes'], ['[data-preview-cases]', '#preview-cases'], ['[data-preview-consent]', '#preview-consent']].forEach(([selector, id]) => {
     document.querySelector(selector)?.addEventListener('click', event => openDialog(id, event.currentTarget));
   });
-  document.querySelector('[data-open-cases]')?.addEventListener('click', event => openDialog('#preview-cases', event.currentTarget));
+  document.querySelector('[data-open-cases]')?.addEventListener('click', () => openDialog('#preview-cases', document.querySelector('[data-preview-cases]')));
   document.querySelectorAll('.preview-dialog').forEach(dialog => {
     dialog.querySelector('[data-close-preview]')?.addEventListener('click', () => dialog.close());
     dialog.addEventListener('click', event => {

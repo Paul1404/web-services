@@ -190,3 +190,5 @@ body.design-preview { padding-top: var(--preview-reviewbar-height, 126px); }
 @media (max-width: 360px) {
   .preview-reviewbar .preview-review-ideas button { padding-inline: 4px; font-size: 10px; }
 }
+
+.preview-dialog-close { position: sticky; top: 0; right: auto; float: right; width: 44px; height: 44px; margin: -24px -20px 0 10px; z-index: 2; background: var(--cream); }
