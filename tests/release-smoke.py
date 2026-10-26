@@ -128,6 +128,7 @@ def cms_checks():
         fixture = ROOT / 'tests/fixtures/wordpress.php'
         cms = container('cms', *mount,
                         '-v', f'{fixture}:/release-fixture.php:ro',
+                        '-v', f'{ROOT / "railway-wengertsberg-wordpress/site-content.html"}:/wengertsberg-layout-fixture.html:ro',
                         '-e', 'WORDPRESS_DB_HOST=release-db', '-e', 'WORDPRESS_DB_NAME=release',
                         '-e', 'WORDPRESS_DB_USER=release', '-e', 'WORDPRESS_DB_PASSWORD=release-fixture-password',
                         '-e', 'WEB_SERVICES_RELEASE_TEST=1', '-e', f'RELEASE_URL={base}',
@@ -144,12 +145,21 @@ def cms_checks():
         assert status == 200 and b'wpbody-content' in body, 'WordPress editor login failed'
         if site == 'wengertsberg':
             status, _, body = request(base)
-            for filename in ['style.css', 'site.js', 'share-preview.png']:
+            for filename in ['style.css', 'site.js', 'share-preview.png', 'design-preview.css', 'design-preview.js']:
                 digest = docker('exec', cms, 'php', '-r',
                                 f'echo substr(hash_file("sha256", "/var/www/html/wp-content/themes/wengertsberg/{filename}"),0,12);').stdout
                 stem, extension = filename.rsplit('.', 1)
                 asset = f'/wp-content/themes/wengertsberg/assets/{stem}.{digest}.{extension}'
                 assert request(base, asset)[0] == 200, asset
+            assert b'preview-hero-grid' not in body, 'Draft layout escaped onto the canonical homepage'
+            snapshot = 'require "/var/www/html/wp-load.php"; echo hash("sha256", get_post((int)get_option("page_on_front"))->post_content);'
+            before = docker('exec', cms, 'php', '-r', snapshot).stdout
+            preview_status, _, preview = request(base, '/?entwurf=2')
+            assert preview_status == 200 and b'preview-hero-grid' in preview, 'Review route did not render its layout'
+            assert b'noindex' in preview and b'design-preview.' in preview
+            assert b'preview-choice-example' in preview and b'disabled' in preview
+            assert docker('exec', cms, 'php', '-r', snapshot).stdout == before, 'Review rendering changed editor content'
+            assert b'preview-hero-grid' not in request(base, '/?entwurf=other')[2]
     # The consent loader is served locally; backend/authenticated HTML must not
     # receive a tracker. Use a synthetic public PHP page for the REDAXO filter.
     assert request(base, '/site-analytics/consent.js')[0] == 200

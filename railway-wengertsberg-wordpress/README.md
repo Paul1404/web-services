@@ -131,3 +131,23 @@ parsing, logo accessibility, sitemap URLs and real 404 responses after deploy.
 Search Console access, sitemap submission and a recrawl request are separate
 from deployment. Do not claim Google refreshed a result until it is observed;
 a request does not guarantee indexing or a particular ranking/snippet.
+
+## Editorial review view
+
+`/?entwurf=2` is a public, noindex review route. It reads and rearranges the
+published front page blocks without changing their stored content. The normal
+homepage retains its existing stylesheet, markup and search/share metadata.
+`design-preview.php` expects the managed group classes and falls back to the
+original content when required groups are missing. Its extra CSS/JS have hashed
+asset paths. Keep all editorial copy, real media and contact settings in WordPress.
+
+The review toolbar links to the canonical page, records outstanding customer
+story/logo approvals, and opens a clearly labelled, non-interactive consent
+visual. The actual analytics loader excludes query-string views, so this route
+never starts analytics. The existing contact form keeps its real REST/SMTP flow;
+reviewing the design must not send unsolicited mail. Do not fabricate logos,
+client outcomes or working-session photographs to fill empty content slots.
+
+CI uses the historical public seed only in its guarded, disposable WordPress
+fixture to exercise the route, asset availability, canonical isolation and editor
+content integrity. Never run that fixture against the live database.
