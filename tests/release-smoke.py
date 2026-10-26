@@ -158,6 +158,7 @@ def cms_checks():
             for review_only in [b'preview-reviewbar', b'<dialog', b'<iframe', b'Firmenlogo', b'design-preview.js']:
                 assert review_only not in body, 'Review-only markup or script escaped onto the public homepage'
             assert not re.search(rb'<script[^>]+design-preview', body), 'Review script loaded on public homepage'
+            assert b'data-analytics-open hidden' in body, 'Footer settings must stay hidden until consent integration is available'
             assert b'/#kontakt' in body, 'Public CTA must point at the live contact section'
             snapshot = 'require "/var/www/html/wp-load.php"; echo hash("sha256", get_post((int)get_option("page_on_front"))->post_content);'
             before = docker('exec', cms, 'php', '-r', snapshot).stdout
