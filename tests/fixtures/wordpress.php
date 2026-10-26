@@ -13,11 +13,16 @@ update_option('home', getenv('RELEASE_URL'));
 if (getenv('RELEASE_THEME') === 'wengertsberg') {
     switch_theme('wengertsberg');
 }
+$content = '<!-- wp:paragraph --><p>Release fixture content</p><!-- /wp:paragraph -->';
+if (getenv('RELEASE_THEME') === 'wengertsberg') {
+    $content = file_get_contents('/wengertsberg-layout-fixture.html');
+    $content = str_replace('Ich unterstütze Führungskräfte', 'Release fixture content. Ich unterstütze Führungskräfte', $content);
+}
 $page = wp_insert_post([
     'post_type' => 'page',
     'post_status' => 'publish',
     'post_title' => 'Release persistence fixture',
-    'post_content' => '<!-- wp:paragraph --><p>Release fixture content</p><!-- /wp:paragraph -->',
+    'post_content' => $content,
 ]);
 if (!$page || is_wp_error($page)) {
     exit(1);
