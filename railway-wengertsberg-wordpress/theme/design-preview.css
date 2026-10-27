@@ -13,6 +13,7 @@
 .preview-hero { padding: 78px 0; background: var(--forest); color: var(--cream); }
 .preview-hero-grid { display: grid; grid-template-columns: 1.6fr 1fr; grid-template-rows: 1fr 1fr; column-gap: 84px; row-gap: 26px; align-items: start; }
 .preview-hero-title { grid-column: 1; grid-row: 1; align-self: end; }
+.preview-hero-name { margin: 0 0 16px; color: #e1e8df; font-size: 14px; line-height: 1.4; letter-spacing: .04em; }
 .preview-hero-title h1 { max-width: 660px; font-size: clamp(40px, 4.6vw, 64px); line-height: 1.07; letter-spacing: -.035em; }
 .preview-hero-title h1 span { display: block; }
 .preview-introduction { grid-column: 1; grid-row: 2; }

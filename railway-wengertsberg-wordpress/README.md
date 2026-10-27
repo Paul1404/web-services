@@ -147,8 +147,9 @@ cards, four reference cards, and a light form on green. Mobile stacks the hero
 copy/button before a full-width portrait and places the approach copy before its
 photograph. The headline, subline and CTA come from that approved design. The
 existing introduction moves to About with the headline phrase removed there to
-avoid repetition. The name/role line also sits in About, not above the hero
-headline where it repeats the header branding; the contact question becomes its heading. Other editorial copy,
+avoid repetition. Only the name "Alexander Eckert" sits above the hero headline;
+the full name/role line stays in About to avoid repeating the header branding.
+The contact question becomes its heading. Other editorial copy,
 real media and contact settings stay in WordPress. Never reimport the seed.
 Missing required managed groups fall back to the original page content.
 
