@@ -117,7 +117,7 @@ add_filter('the_content', function ($content) {
     <div id="preview-design-panel">
     <section class="preview-hero" aria-label="Alexander Eckert">
         <div class="wrap preview-hero-grid">
-            <div class="preview-hero-title"><h1><span>Vom Shopfloor</span> <span>bis in die</span> <span>Vorstandsetage.</span></h1></div>
+            <div class="preview-hero-title"><p class="preview-hero-name">Alexander Eckert</p><h1><span>Vom Shopfloor</span> <span>bis in die</span> <span>Vorstandsetage.</span></h1></div>
             <div class="preview-introduction"><p class="preview-hero-subline">Menschlich. Wirksam. Mit Freude.</p><a class="button" href="<?php echo esc_url(home_url('/#kontakt')); ?>">Ins Gespräch kommen</a></div>
             <div class="preview-portrait"><?php echo wengertsberg_preview_render([$groups['hero-portrait']]); ?></div>
         </div>
