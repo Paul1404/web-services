@@ -117,7 +117,6 @@ add_filter('the_content', function ($content) {
     <div id="preview-design-panel">
     <section class="preview-hero" aria-label="Alexander Eckert">
         <div class="wrap preview-hero-grid">
-            <div class="preview-kicker"><p class="intro-label">Alexander Eckert: Coaching, Training und Beratung</p></div>
             <div class="preview-hero-title"><h1><span>Vom Shopfloor</span> <span>bis in die</span> <span>Vorstandsetage.</span></h1></div>
             <div class="preview-introduction"><p class="preview-hero-subline">Menschlich. Wirksam. Mit Freude.</p><a class="button" href="<?php echo esc_url(home_url('/#kontakt')); ?>">Ins Gespräch kommen</a></div>
             <div class="preview-portrait"><?php echo wengertsberg_preview_render([$groups['hero-portrait']]); ?></div>
@@ -126,7 +125,7 @@ add_filter('the_content', function ($content) {
     <section id="ueber-mich" class="preview-about section">
         <div class="wrap preview-about-grid">
             <div class="preview-section-heading"><span class="preview-section-number" aria-hidden="true">01</span><?php echo wengertsberg_preview_render([$about_heading]); ?></div>
-            <div class="about-copy"><div class="preview-about-introduction"><?php echo $description_html; ?></div><?php echo wengertsberg_preview_render($about_body); ?></div>
+            <div class="about-copy"><p class="preview-person">Alexander Eckert: Coaching, Training und Beratung</p><div class="preview-about-introduction"><?php echo $description_html; ?></div><?php echo wengertsberg_preview_render($about_body); ?></div>
         </div>
     </section>
     <section id="leistungen" class="preview-services section">
