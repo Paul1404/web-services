@@ -92,7 +92,7 @@ add_action('wp_head', function () {
 
 add_filter('document_title_separator', fn() => '|');
 add_filter('pre_get_document_title', function ($title) {
-    return is_front_page() ? 'Coaching & Teamentwicklung in Schweinfurt | Wengertsberg' : $title;
+    return is_front_page() ? 'Training & Consulting | Wengertsberg' : $title;
 });
 
 // Reserve the real image space even when an optimized file extension differs
