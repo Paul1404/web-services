@@ -115,6 +115,7 @@ Verify at 320px and a typical phone width as well as the existing desktop view.
 
 `theme/seo.php` owns the homepage search title, description, Open Graph metadata
 and one linked JSON-LD graph for WebSite, Organization, Person and WebPage.
+The approved browser/document title is `Training & Consulting | Wengertsberg`.
 Share title and description are intentionally separate from the search title
 and description. Keep the approved social copy independent of SEO wording.
 The visible homepage copy and H1 remain editorial content in WordPress. Use
