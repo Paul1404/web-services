@@ -101,5 +101,7 @@ for component in app origin; do
 done
 config="k3s/workloads/$SITE/origin/config.yaml"
 if test -f "$config"; then git add "$config"; fi
+ingress="k3s/workloads/$SITE/origin/ingress.yaml"
+if test -f "$ingress"; then git add "$ingress"; fi
 git commit -m "Promote tested Website $RELEASE_SHA"
 git push origin "releases/${site}-$RELEASE_SHA"

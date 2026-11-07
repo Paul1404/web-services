@@ -35,3 +35,15 @@ for component, name in [('app', application), ('origin', 'origin')]:
         if count != 1:
             raise ValueError('Unexpected origin release header')
     path.write_text(value)
+
+# Kubernetes ingress replaces the separate origin over time. Keep the release
+# provenance header current while allowing sites without an ingress to use the
+# existing promotion path unchanged.
+ingress = Path('k3s/workloads') / site / 'origin' / 'ingress.yaml'
+if ingress.exists():
+    header = {'wengertsberg': 'X-Wengertsberg-Release', 'svu': 'X-SVU-Release', 'sm': 'X-SM-Release'}[site]
+    pattern = re.compile(r'(?m)^(\s*' + re.escape(header) + r':\s*)[a-f0-9]{40}$')
+    value, count = pattern.subn(lambda match: match[1] + revision, ingress.read_text())
+    if count != 1:
+        raise ValueError(f'Unexpected ingress release header: {ingress}')
+    ingress.write_text(value)
