@@ -11,14 +11,14 @@ The older `web-host-gitops` repository retains host and recovery history.
 
 This repository contains six build roots: three CMS containers and their three
 protected Caddy origins. Production runs on mx.pdcd.net through the private
-web-host-gitops repository. The Railway web-services project is stopped as a
+mx-fleet repository. The Railway web-services project is stopped as a
 cold data fallback; never reconnect or redeploy it during normal releases.
 The retired SSH host and old Compose deployment timer are not deployment
 targets. Historical configuration stays in the private archived repository.
 
-The explicitly authorized Wengertsberg pilot uses a new pull deployment on
-mx.pdcd.net, separate from the retired host/timer. Its desired state and host
-runbook live in private Paul1404/web-host-gitops. See docs/wengertsberg-gitops.md.
+The Wengertsberg deployment on mx.pdcd.net is separate from the retired
+host/timer. Current desired state is in `Paul1404/mx-fleet`; the archived
+`Paul1404/web-host-gitops` repository retains historical recovery guidance.
 Keep Railway's services, volumes and database as a preserved fallback throughout
 pilot verification. Never switch back to stale data after the new site accepts
 writes. Other services retain their existing Railway deployment path.
@@ -31,8 +31,8 @@ root directories and watch patterns in the same scoped operation.
 ## Runtime invariants
 
 - Preserve existing volumes, logical databases, users, and website URLs.
-- CMS services remain private in their per-site rootless networks. CloudFront
-  reaches the protected mx origins configured in web-host-gitops.
+- CMS services remain private in their per-site Kubernetes networks. CloudFront
+  reaches the protected mx origins configured in mx-fleet.
 - `/healthz` is the only unauthenticated origin path. Other paths require the
   site's verification header. Never print, commit, or log its value.
 - Origin `/healthz` proxies the private CMS `/railway-health.php` probe. A
