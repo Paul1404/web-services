@@ -5,6 +5,7 @@ test "$GITHUB_REPOSITORY" = Paul1404/web-services
 test "$(git rev-parse HEAD)" = "$RELEASE_SHA"
 test -n "$PROMOTION_KEY"
 umask 077
+export SITE=wengertsberg APPLICATION=wordpress
 artifact_dir="$RUNNER_TEMP/wengertsberg-artifacts"
 mkdir -p "$artifact_dir"
 # The key is scoped only to the private desired-state repository. No host key,
@@ -26,7 +27,7 @@ pinned=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["source"
 [[ "$pinned" =~ ^[0-9a-f]{40}$ ]]
 # Compare cumulatively with the last desired release. This also catches a site
 # change whose CI was superseded by an unrelated documentation commit.
-if test "$pinned" != 0000000000000000000000000000000000000000 && git cat-file -e "$pinned^{commit}" 2>/dev/null && git diff --quiet "$pinned" "$RELEASE_SHA" -- railway-wengertsberg-wordpress railway-wengertsberg-origin scripts/publish-wengertsberg.sh .github/workflows/publish-wengertsberg.yml; then
+if test "$pinned" != 0000000000000000000000000000000000000000 && git cat-file -e "$pinned^{commit}" 2>/dev/null && git diff --quiet "$pinned" "$RELEASE_SHA" -- railway-wengertsberg-wordpress railway-wengertsberg-origin scripts/publish-wengertsberg.sh .github/workflows/publish-wengertsberg.yml scripts/publish-oci.sh scripts/verify-public-oci.py scripts/promote-fleet-images.py; then
     echo 'Wengertsberg release inputs are unchanged'
     exit 0
 fi
@@ -68,6 +69,8 @@ PY
     gh release upload "$tag" "$artifact_dir/wordpress.tar.gz" "$artifact_dir/origin.tar.gz" "$artifact_dir/database.tar.gz" "$artifact_dir/release.json" --clobber
     gh release edit "$tag" --draft=false
 fi
+export ARTIFACT_DIR="$artifact_dir"
+bash "$GITHUB_WORKSPACE/scripts/publish-oci.sh"
 cd "$RUNNER_TEMP/desired-state"
 git fetch --quiet origin main
 git reset --hard origin/main
@@ -82,6 +85,7 @@ current.update(source=release['source'],wordpressVersion=release['wordpressVersi
 if database:current['images']['database']=database
 p.write_text(json.dumps(current,indent=2)+'\n')
 PY
+python3 "$GITHUB_WORKSPACE/scripts/promote-fleet-images.py"
 if git diff --quiet; then
     echo 'Release is already desired state'
     exit 0
@@ -89,5 +93,11 @@ fi
 git config user.name 'Wengertsberg release automation'
 git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
 git add sites/wengertsberg.json
+for component in app origin; do
+    path="k3s/workloads/$SITE/$component/resources.yaml"
+    if test -f "$path"; then git add "$path"; fi
+done
+config="k3s/workloads/$SITE/origin/config.yaml"
+if test -f "$config"; then git add "$config"; fi
 git commit -m "Promote tested Wengertsberg $RELEASE_SHA"
 git push origin "releases/wengertsberg-$RELEASE_SHA"
