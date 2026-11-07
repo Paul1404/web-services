@@ -60,8 +60,10 @@ root directories and watch patterns in the same scoped operation.
 
 ## Verification
 
-CI builds and exercises all six Dockerfiles with `python3 tests/release-smoke.py
-<build-directory> <image>`. Fixtures create uniquely named Docker networks and
+CI builds and exercises application images with `python3 tests/release-smoke.py
+<build-directory> <image>`. The three required origin check contexts remain,
+but build and exercise an origin only when its image or shared smoke inputs
+change. Fixtures create uniquely named Docker networks and
 volumes, have no external network access, and are removed afterward. Never use
 production volumes, databases or credentials in these tests. WordPress fixture
 mail is disabled. REDAXO fresh setup is test-only; production still refuses an
@@ -96,6 +98,10 @@ ship changes.
 SVU and Schlossmuehle also publish checked immutable archives through
 `publish-websites.yml`. Release jobs have no host SSH or runtime credentials.
 Keep source runtime volumes and the migration write fences intact as fallbacks.
+When a site's Fleet origin deployment has been retired, publish only its tested
+application image and preserve the last origin and database artifact metadata.
+Restoring an origin deployment makes its next release build and verify that
+origin again.
 
 ## Optional analytics
 

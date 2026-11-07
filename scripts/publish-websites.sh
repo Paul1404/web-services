@@ -25,13 +25,18 @@ assert len(keys)==1
 PY
 export GIT_SSH_COMMAND="ssh -F $RUNNER_TEMP/promotion-ssh-config"
 git clone --quiet git@github.com:Paul1404/mx-fleet.git "$RUNNER_TEMP/desired-state"
-pinned=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["source"]["commit"])' "$RUNNER_TEMP/desired-state/sites/${site}.json")
+previous_manifest="$RUNNER_TEMP/desired-state/sites/${site}.json"
+pinned=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["source"]["commit"])' "$previous_manifest")
 [[ "$pinned" =~ ^[0-9a-f]{40}$ ]]
+origin_active=false
+origin_input=-
+if test -f "$RUNNER_TEMP/desired-state/k3s/workloads/$site/origin/resources.yaml"; then origin_active=true; origin_input="$origin_directory"; fi
+export ORIGIN_ACTIVE="$origin_active" PREVIOUS_MANIFEST="$previous_manifest"
 # Compare cumulatively with the last desired release. This also catches a site
 # change whose CI was superseded by an unrelated documentation commit.
 # Promotion-only and workflow edits are checked by CI; they do not change the
 # tested site images and should not redeploy an otherwise unchanged site.
-if bash "$GITHUB_WORKSPACE/scripts/release-inputs-changed.sh" "$pinned" "$RELEASE_SHA" "$app_directory" "$origin_directory"; then
+if bash "$GITHUB_WORKSPACE/scripts/release-inputs-changed.sh" "$pinned" "$RELEASE_SHA" "$app_directory" "$origin_input"; then
     :
 else
     status=$?
@@ -47,7 +52,9 @@ fi
 if test "$published" = true; then
     gh release download "$tag" --pattern release.json --dir "$artifact_dir"
 else
-    for name in "$application" origin; do
+    components=("$application")
+    if test "$origin_active" = true; then components+=(origin); fi
+    for name in "${components[@]}"; do
         case "$name" in
             "$application") directory="$app_directory" ;;
             origin) directory="$origin_directory" ;;
@@ -58,23 +65,13 @@ else
         docker image inspect --format '{{.Id}}' "$image" > "$artifact_dir/$name.id"
         docker save "$image" | gzip -n > "$artifact_dir/$name.tar.gz"
     done
-    docker pull mariadb:12.3
-    docker image inspect --format '{{.Id}}' mariadb:12.3 > "$artifact_dir/database.id"
-    docker save mariadb:12.3 | gzip -n > "$artifact_dir/database.tar.gz"
-    ARTIFACT_DIR="$artifact_dir" python3 - <<'PY'
-import hashlib,json,os,pathlib,re
-p=pathlib.Path(os.environ['ARTIFACT_DIR']);sha=os.environ['RELEASE_SHA'];site=os.environ['SITE']
-version=pathlib.Path(os.environ['APP_DIRECTORY'],'Dockerfile').read_text().splitlines()[0].removeprefix('FROM ')
-images={}
-for name in [os.environ['APPLICATION'],'origin','database']:
-    with (p/(name+'.tar.gz')).open('rb') as f:digest=hashlib.file_digest(f,'sha256').hexdigest()
-    images[name]={'url':f'https://github.com/Paul1404/web-services/releases/download/{site}-{sha}/{name}.tar.gz','sha256':digest,'id':(p/(name+'.id')).read_text().strip()}
-(p/'release.json').write_text(json.dumps({'source':{'repository':'Paul1404/web-services','commit':sha},'runtimeVersion':version,'images':images},indent=2)+'\n')
-PY
+    python3 "$GITHUB_WORKSPACE/scripts/build-release-metadata.py" "$site" "$application" "$RELEASE_SHA" "$app_directory" "$artifact_dir" "$previous_manifest" "$origin_active"
     if ! gh release view "$tag" >/dev/null 2>&1; then
         gh release create "$tag" --target "$RELEASE_SHA" --draft --title "Website $RELEASE_SHA" --notes 'Tested container archives for pull-based deployment. Digests and image IDs are in release.json. Website data and secrets are excluded.'
     fi
-    gh release upload "$tag" "$artifact_dir/$application.tar.gz" "$artifact_dir/origin.tar.gz" "$artifact_dir/database.tar.gz" "$artifact_dir/release.json" --clobber
+    assets=("$artifact_dir/$application.tar.gz" "$artifact_dir/release.json")
+    if test "$origin_active" = true; then assets+=("$artifact_dir/origin.tar.gz"); fi
+    gh release upload "$tag" "${assets[@]}" --clobber
     gh release edit "$tag" --draft=false
 fi
 export ARTIFACT_DIR="$artifact_dir"
@@ -89,8 +86,10 @@ p=pathlib.Path('sites')/(os.environ['SITE']+'.json');current=json.loads(p.read_t
 release=json.loads((pathlib.Path(os.environ['ARTIFACT_DIR'])/'release.json').read_text())
 assert release['source']=={'repository':'Paul1404/web-services','commit':os.environ['RELEASE_SHA']}
 database=current['images'].get('database')
+origin=current['images'].get('origin')
 current.update(source=release['source'],runtimeVersion=release['runtimeVersion'],images=release['images'])
 if database:current['images']['database']=database
+if os.environ['ORIGIN_ACTIVE']=='false':current['images']['origin']=origin
 p.write_text(json.dumps(current,indent=2)+'\n')
 PY
 python3 "$GITHUB_WORKSPACE/scripts/promote-fleet-images.py"
