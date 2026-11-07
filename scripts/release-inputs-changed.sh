@@ -8,7 +8,9 @@ origin="$4"
 if [[ "$previous" == 0000000000000000000000000000000000000000 ]] || ! git cat-file -e "$previous^{commit}" 2>/dev/null; then
     exit 0
 fi
-if git diff --quiet "$previous" "$revision" -- "$application" "$origin" scripts/publish-oci.sh scripts/verify-public-oci.py; then
+inputs=("$application")
+if [[ "$origin" != '-' ]]; then inputs+=("$origin"); fi
+if git diff --quiet "$previous" "$revision" -- "${inputs[@]}"; then
     exit 1
 else
     status=$?
