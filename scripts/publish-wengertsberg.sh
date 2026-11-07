@@ -27,7 +27,13 @@ pinned=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["source"
 [[ "$pinned" =~ ^[0-9a-f]{40}$ ]]
 # Compare cumulatively with the last desired release. This also catches a site
 # change whose CI was superseded by an unrelated documentation commit.
-if test "$pinned" != 0000000000000000000000000000000000000000 && git cat-file -e "$pinned^{commit}" 2>/dev/null && git diff --quiet "$pinned" "$RELEASE_SHA" -- railway-wengertsberg-wordpress railway-wengertsberg-origin scripts/publish-wengertsberg.sh .github/workflows/publish-wengertsberg.yml scripts/publish-oci.sh scripts/verify-public-oci.py scripts/promote-fleet-images.py; then
+# Promotion-only and workflow edits are checked by CI; they do not change the
+# tested site images and should not redeploy an otherwise unchanged site.
+if bash "$GITHUB_WORKSPACE/scripts/release-inputs-changed.sh" "$pinned" "$RELEASE_SHA" railway-wengertsberg-wordpress railway-wengertsberg-origin; then
+    :
+else
+    status=$?
+    if test "$status" -ne 1; then exit "$status"; fi
     echo 'Wengertsberg release inputs are unchanged'
     exit 0
 fi
