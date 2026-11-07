@@ -20,6 +20,15 @@ for name in "$application" origin; do
     expected=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["images"][sys.argv[2]]["sha256"])' "$artifacts/release.json" "$name")
     printf '%s  %s\n' "$expected" "$archive" | sha256sum --check --status
     image_id=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["images"][sys.argv[2]]["id"])' "$artifacts/release.json" "$name")
+    python3 - "$archive" "$image_id" <<'PYVERIFY'
+import hashlib,json,sys,tarfile
+with tarfile.open(sys.argv[1], 'r:gz') as archive:
+    manifest=json.load(archive.extractfile('manifest.json'))
+    if len(manifest)!=1: raise ValueError('Expected exactly one image')
+    config=archive.extractfile(manifest[0]['Config'])
+    if not config or 'sha256:'+hashlib.sha256(config.read()).hexdigest()!=sys.argv[2]:
+        raise ValueError('Archive configuration differs from approved image ID')
+PYVERIFY
     gzip -dc "$archive" | docker load >/dev/null
     docker image inspect "$image_id" >/dev/null
     image="ghcr.io/paul1404/web-services-${site}-${name}:$RELEASE_SHA"
