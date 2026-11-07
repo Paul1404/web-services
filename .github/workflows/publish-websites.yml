@@ -5,6 +5,7 @@ on:
     types: [completed]
 permissions:
   contents: write
+  packages: write
 concurrency:
   group: publish-websites
   cancel-in-progress: false
