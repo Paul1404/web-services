@@ -24,7 +24,7 @@ assert len(keys)==1
 (p/'promotion-ssh-config').write_text(f'Host github.com\n HostName ssh.github.com\n Port 443\n User git\n HostKeyAlias github.com\n IdentityFile {p}/promotion-key\n IdentitiesOnly yes\n StrictHostKeyChecking yes\n UserKnownHostsFile {p}/promotion-known-hosts\n')
 PY
 export GIT_SSH_COMMAND="ssh -F $RUNNER_TEMP/promotion-ssh-config"
-git clone --quiet git@github.com:Paul1404/web-host-gitops.git "$RUNNER_TEMP/desired-state"
+git clone --quiet git@github.com:Paul1404/mx-fleet.git "$RUNNER_TEMP/desired-state"
 pinned=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["source"]["commit"])' "$RUNNER_TEMP/desired-state/sites/${site}.json")
 [[ "$pinned" =~ ^[0-9a-f]{40}$ ]]
 # Compare cumulatively with the last desired release. This also catches a site

@@ -25,5 +25,5 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_SHA: ${{ github.event.workflow_run.head_sha }}
-          PROMOTION_KEY: ${{ secrets.MX_GITOPS_DEPLOY_KEY }}
+          PROMOTION_KEY: ${{ secrets.MX_FLEET_DEPLOY_KEY }}
         run: bash scripts/publish-wengertsberg.sh

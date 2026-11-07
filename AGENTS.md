@@ -4,6 +4,11 @@
 
 ## Scope
 
+Website releases are promoted to the private `Paul1404/mx-fleet` repository
+using the scoped `MX_FLEET_DEPLOY_KEY`. During the staged handover, check the
+live Fleet GitRepo before assuming every workload follows that repository.
+The older `web-host-gitops` repository retains host and recovery history.
+
 This repository contains six build roots: three CMS containers and their three
 protected Caddy origins. Production runs on mx.pdcd.net through the private
 web-host-gitops repository. The Railway web-services project is stopped as a
