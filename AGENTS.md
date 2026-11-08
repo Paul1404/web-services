@@ -4,24 +4,16 @@
 
 ## Scope
 
-Website releases are promoted to the private `Paul1404/mx-fleet` repository
-using the scoped `MX_FLEET_DEPLOY_KEY`. During the staged handover, check the
-live Fleet GitRepo before assuming every workload follows that repository.
-The older `web-host-gitops` repository retains host and recovery history.
+Website releases are promoted to the private `Paul1404/vertex-fleet`
+repository using the scoped `VERTEX_FLEET_DEPLOY_KEY`. The three CMS sites run
+on the Vertex RKE2 cluster. `mx-fleet` retains the stopped source workloads
+and recovery history; `web-host-gitops` is archived.
 
-This repository contains six build roots: three CMS containers and their three
-protected Caddy origins. Production runs on mx.pdcd.net through the private
-mx-fleet repository. The Railway web-services project is stopped as a
-cold data fallback; never reconnect or redeploy it during normal releases.
-The retired SSH host and old Compose deployment timer are not deployment
-targets. Historical configuration stays in the private archived repository.
-
-The Wengertsberg deployment on mx.pdcd.net is separate from the retired
-host/timer. Current desired state is in `Paul1404/mx-fleet`; the archived
-`Paul1404/web-host-gitops` repository retains historical recovery guidance.
-Keep Railway's services, volumes and database as a preserved fallback throughout
-pilot verification. Never switch back to stale data after the new site accepts
-writes. Other services retain their existing Railway deployment path.
+This repository contains three CMS build roots and three historical protected
+Caddy origin build roots. Current public traffic uses CloudFront and protected
+Vertex Gateway routes. The Railway web-services project remains a cold fallback;
+never reconnect or redeploy it during normal releases. Never switch back to
+stale data after the new site accepts writes.
 
 Before work, inspect status, existing changes, branch divergence, and remotes.
 Read the target directory's README, Dockerfile, and entrypoint. Preserve
@@ -32,9 +24,9 @@ root directories and watch patterns in the same scoped operation.
 
 - Preserve existing volumes, logical databases, users, and website URLs.
 - CMS services remain private in their per-site Kubernetes networks. CloudFront
-  reaches the protected mx origins configured in mx-fleet.
-- `/healthz` is the only unauthenticated origin path. Other paths require the
-  site's verification header. Never print, commit, or log its value.
+  reaches the protected Vertex origins configured in vertex-fleet.
+- Vertex origin routes require the site verification header. Never print,
+  commit, or log its value.
 - Origin `/healthz` proxies the private CMS `/railway-health.php` probe. A
   healthy Caddy process alone is insufficient. The probe returns only `ok` or
   `unavailable`, disables caching, and makes read-only database checks.
@@ -47,7 +39,7 @@ root directories and watch patterns in the same scoped operation.
   origin deployment that failed while its backend was unavailable.
 - Entrypoints refresh only the service-owned `railway-health.php` in the
   persistent web root. Do not replace CMS configuration, media or editor content.
-- Caddy forwards the canonical Host and `X-Forwarded-Proto: https`.
+- The Vertex ingress forwards the canonical Host and `X-Forwarded-Proto: https`.
 - Apache runs prefork only. Build and startup both defend against event MPM.
 - REDAXO must refuse an empty migrated configuration; its migration hold is
   only for an explicitly authorized data transfer.
