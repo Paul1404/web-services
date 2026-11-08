@@ -116,4 +116,10 @@ if test -f "$config"; then git add "$config"; fi
 ingress="k3s/workloads/$SITE/origin/ingress.yaml"
 if test -f "$ingress"; then git add "$ingress"; fi
 git commit -m "Promote tested Website $RELEASE_SHA"
-git push origin HEAD:main
+for attempt in 1 2 3; do
+    git fetch --quiet origin main
+    git rebase origin/main
+    if git push origin HEAD:main; then exit 0; fi
+done
+echo 'Unable to promote after concurrent updates' >&2
+exit 1
