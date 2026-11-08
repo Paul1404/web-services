@@ -22,7 +22,7 @@ assert len(keys)==1
 (p/'promotion-ssh-config').write_text(f'Host github.com\n HostName ssh.github.com\n Port 443\n User git\n HostKeyAlias github.com\n IdentityFile {p}/promotion-key\n IdentitiesOnly yes\n StrictHostKeyChecking yes\n UserKnownHostsFile {p}/promotion-known-hosts\n')
 PY
 export GIT_SSH_COMMAND="ssh -F $RUNNER_TEMP/promotion-ssh-config"
-git clone --quiet git@github.com:Paul1404/mx-fleet.git "$RUNNER_TEMP/desired-state"
+git clone --quiet git@github.com:Paul1404/vertex-fleet.git "$RUNNER_TEMP/desired-state"
 previous_manifest="$RUNNER_TEMP/desired-state/sites/wengertsberg.json"
 pinned=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["source"]["commit"])' "$previous_manifest")
 [[ "$pinned" =~ ^[0-9a-f]{40}$ ]]
@@ -90,14 +90,23 @@ if database:current['images']['database']=database
 if os.environ['ORIGIN_ACTIVE']=='false':current['images']['origin']=origin
 p.write_text(json.dumps(current,indent=2)+'\n')
 PY
-python3 "$GITHUB_WORKSPACE/scripts/promote-fleet-images.py"
+ARTIFACT_DIR="$artifact_dir" python3 - <<'PYCODE'
+import json, os, pathlib, re
+registry=json.loads((pathlib.Path(os.environ['ARTIFACT_DIR'])/'registry.json').read_text())
+image=registry['wordpress']
+assert re.fullmatch(r'ghcr\.io/paul1404/web-services-wengertsberg-wordpress@sha256:[a-f0-9]{64}',image)
+p=pathlib.Path('workloads/wengertsberg/resources.yaml')
+s,n=re.subn(r'(?m)^(\s*image: )ghcr\.io/paul1404/web-services-wengertsberg-wordpress@sha256:[a-f0-9]{64}$',lambda m:m[1]+image,p.read_text()); assert n==1; p.write_text(s)
+p=pathlib.Path('workloads/wengertsberg/route.yaml')
+s,n=re.subn(r'(?m)^(\s*X-Wengertsberg-Release: )[a-f0-9]{40}$',lambda m:m[1]+os.environ['RELEASE_SHA'],p.read_text()); assert n==1;p.write_text(s)
+PYCODE
 if git diff --quiet; then
     echo 'Release is already desired state'
     exit 0
 fi
 git config user.name 'Wengertsberg release automation'
 git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-git add sites/wengertsberg.json
+git add sites/wengertsberg.json workloads/wengertsberg/resources.yaml workloads/wengertsberg/route.yaml
 for component in app origin; do
     path="k3s/workloads/$SITE/$component/resources.yaml"
     if test -f "$path"; then git add "$path"; fi
