@@ -116,4 +116,4 @@ if test -f "$config"; then git add "$config"; fi
 ingress="k3s/workloads/$SITE/origin/ingress.yaml"
 if test -f "$ingress"; then git add "$ingress"; fi
 git commit -m "Promote tested Wengertsberg $RELEASE_SHA"
-git push origin "releases/wengertsberg-$RELEASE_SHA"
+git push origin HEAD:main
