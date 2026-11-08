@@ -24,7 +24,7 @@ assert len(keys)==1
 (p/'promotion-ssh-config').write_text(f'Host github.com\n HostName ssh.github.com\n Port 443\n User git\n HostKeyAlias github.com\n IdentityFile {p}/promotion-key\n IdentitiesOnly yes\n StrictHostKeyChecking yes\n UserKnownHostsFile {p}/promotion-known-hosts\n')
 PY
 export GIT_SSH_COMMAND="ssh -F $RUNNER_TEMP/promotion-ssh-config"
-git clone --quiet git@github.com:Paul1404/mx-fleet.git "$RUNNER_TEMP/desired-state"
+git clone --quiet git@github.com:Paul1404/vertex-fleet.git "$RUNNER_TEMP/desired-state"
 previous_manifest="$RUNNER_TEMP/desired-state/sites/${site}.json"
 pinned=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["source"]["commit"])' "$previous_manifest")
 [[ "$pinned" =~ ^[0-9a-f]{40}$ ]]
@@ -92,14 +92,21 @@ if database:current['images']['database']=database
 if os.environ['ORIGIN_ACTIVE']=='false':current['images']['origin']=origin
 p.write_text(json.dumps(current,indent=2)+'\n')
 PY
-python3 "$GITHUB_WORKSPACE/scripts/promote-fleet-images.py"
+ARTIFACT_DIR="$artifact_dir" python3 - <<'PYCODE'
+import json, os, pathlib, re
+site=os.environ['SITE']; app=os.environ['APPLICATION']; assert (site,app) in {('svu','wordpress'),('sm','redaxo')}
+registry=json.loads((pathlib.Path(os.environ['ARTIFACT_DIR'])/'registry.json').read_text());image=registry[app]
+assert re.fullmatch(r'ghcr\.io/paul1404/web-services-'+site+'-'+app+r'@sha256:[a-f0-9]{64}',image)
+p=pathlib.Path('workloads')/site/'resources.yaml';s,n=re.subn(r'(?m)^(\s*image: )ghcr\.io/paul1404/web-services-'+site+'-'+app+r'@sha256:[a-f0-9]{64}$',lambda m:m[1]+image,p.read_text());assert n==1;p.write_text(s)
+header={'svu':'X-SVU-Release','sm':'X-SM-Release'}[site];p=pathlib.Path('workloads')/site/'route.yaml';s,n=re.subn(r'(?m)^(\s*'+header+r': )[a-f0-9]{40}$',lambda m:m[1]+os.environ['RELEASE_SHA'],p.read_text());assert n==1;p.write_text(s)
+PYCODE
 if git diff --quiet; then
     echo 'Release is already desired state'
     exit 0
 fi
 git config user.name 'Website release automation'
 git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-git add sites/${site}.json
+git add sites/${site}.json workloads/${site}/resources.yaml workloads/${site}/route.yaml
 for component in app origin; do
     path="k3s/workloads/$SITE/$component/resources.yaml"
     if test -f "$path"; then git add "$path"; fi
@@ -109,4 +116,4 @@ if test -f "$config"; then git add "$config"; fi
 ingress="k3s/workloads/$SITE/origin/ingress.yaml"
 if test -f "$ingress"; then git add "$ingress"; fi
 git commit -m "Promote tested Website $RELEASE_SHA"
-git push origin "releases/${site}-$RELEASE_SHA"
+git push origin HEAD:main
