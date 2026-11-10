@@ -1,4 +1,9 @@
-# Protected SVU CloudFront origin
+# SVU historical Caddy origin
+
+> Historical configuration: the active CloudFront origin is the protected Vertex
+> Gateway. This Caddy build is not the current production route. The details
+> below describe the retired Railway arrangement and must not be used as live
+> deployment instructions.
 
 This small Caddy service is the public origin for the existing
 `sv-untereuerheim.de` CloudFront distribution. WordPress and MariaDB stay

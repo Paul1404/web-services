@@ -1,5 +1,9 @@
 # Wengertsberg pilot on mx.pdcd.net
 
+> Historical pilot: Wengertsberg now runs on Vertex and its publisher promotes
+> the tested application image to Vertex Fleet. The mx host workflow and key
+> described below are not the active deployment path.
+
 Protected source CI remains authoritative. The publish workflow runs only after
 a successful push-to-main validation from this repository, never a fork or PR.
 It rebuilds and exercises the actual release images with isolated fixtures,

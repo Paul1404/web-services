@@ -6,19 +6,18 @@
 
 Website releases are promoted to the private `Paul1404/vertex-fleet`
 repository using the scoped `VERTEX_FLEET_DEPLOY_KEY`. The three CMS sites run
-on the Vertex RKE2 cluster. `mx-fleet` retains the stopped source workloads
-and recovery history; `web-host-gitops` is archived.
+on the Vertex RKE2 cluster. The old mx application workloads and volumes have been retired;
+`web-host-gitops` is archived.
 
 This repository contains three CMS build roots and three historical protected
 Caddy origin build roots. Current public traffic uses CloudFront and protected
-Vertex Gateway routes. The Railway web-services project remains a cold fallback;
-never reconnect or redeploy it during normal releases. Never switch back to
-stale data after the new site accepts writes.
+Vertex Gateway routes. Railway-era configuration is historical and is not the active deployment path.
+Never reconnect or redeploy a stale copy during normal releases.
 
 Before work, inspect status, existing changes, branch divergence, and remotes.
 Read the target directory's README, Dockerfile, and entrypoint. Preserve
-unrelated changes. Do not move build directories without updating Railway's
-root directories and watch patterns in the same scoped operation.
+unrelated changes. Do not rename historical build directories without updating their CI, release
+scripts and consumers in the same scoped operation.
 
 ## Runtime invariants
 
@@ -27,16 +26,12 @@ root directories and watch patterns in the same scoped operation.
   reaches the protected Vertex origins configured in vertex-fleet.
 - Vertex origin routes require the site verification header. Never print,
   commit, or log its value.
-- Origin `/healthz` proxies the private CMS `/railway-health.php` probe. A
-  healthy Caddy process alone is insufficient. The probe returns only `ok` or
-  `unavailable`, disables caching, and makes read-only database checks.
-- CMS Apache aliases `/healthz` to the probe file. The preserved Railway
-  fallback also retains `/healthz` and its 90-second startup timeout.
-- In the cold Railway fallback, retain `PORT=80` on CMS and `PORT=8080` on origins, matching
-  their actual Apache/Caddy listeners. Private upstreams still use CMS port 80;
-  do not change those listeners to accommodate an injected health-check port.
-- Origin readiness depends on its CMS. Recover the CMS first, then retry an
-  origin deployment that failed while its backend was unavailable.
+- CMS Apache aliases `/healthz` to the private `/railway-health.php` probe.
+  It returns only `ok` or `unavailable`, disables caching, and makes read-only
+  database checks. The historical Caddy origin proxies that check; Caddy alone
+  is not sufficient to establish backend readiness.
+- The CMS and historical origin images listen on ports 80 and 8080 respectively.
+  Preserve their Apache/Caddy listener contracts when changing builds.
 - Entrypoints refresh only the service-owned `railway-health.php` in the
   persistent web root. Do not replace CMS configuration, media or editor content.
 - The Vertex ingress forwards the canonical Host and `X-Forwarded-Proto: https`.
@@ -47,8 +42,8 @@ root directories and watch patterns in the same scoped operation.
 - Wengertsberg's managed theme is in `railway-wengertsberg-wordpress/theme/`.
   Its entrypoint syncs theme files into the persistent volume, but must never
   replace WordPress page content. Read that directory's README before edits.
-- Umami and Vaultwarden use digest-pinned upstream images in web-host-gitops.
-  Their old Railway image sources and database volumes remain stopped fallbacks.
+- Umami and Vaultwarden use digest-pinned upstream images managed separately
+  by Vertex Fleet; the website publishers do not deploy them.
 
 ## Verification
 
@@ -73,9 +68,9 @@ responses. Run `sh -n` on POSIX entrypoints and `bash -n` on REDAXO's entrypoint
 Use `node --test tests/*.test.mjs` for the redirect function.
 
 Production completion requires successful source checks and publication, a
-checked desired-state promotion, a successful host pull, and independent
-canonical HTTPS and protected-origin readiness/denial readback. Never restart
-the cold Railway fallback merely to satisfy an obsolete deployment check. State when authenticated CMS, backup, or
+checked desired-state promotion, successful Fleet reconciliation, and independent
+canonical HTTPS and protected-origin readiness/denial readback. Do not restart
+legacy deployments to satisfy an obsolete check. State when authenticated CMS, backup, or
 restore checks were not performed. Never infer that Git contains runtime data.
 
 Dependency updates are reviewed. Keep Caddy and WordPress versions aligned

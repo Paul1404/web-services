@@ -1,10 +1,11 @@
-# Private SVU WordPress service
+# SVU WordPress image
 
-This service runs WordPress 7.1.0 on Railway without a public domain. Apache
-uses the prefork MPM at build and runtime. The protected `svu-origin` service
-proxies to it over Railway's private network.
+This build supplies the SV Untereuerheim WordPress workload on Vertex RKE2.
+Fleet manages the deployment, its persistent `/var/www/html` volume and the
+separate MariaDB workload. CloudFront reaches it through the protected Vertex
+Gateway. The `railway-` directory name is retained for the existing build and
+release automation.
 
-WordPress uses the isolated `svu` database and login on the `web-services`
-project's MariaDB 12.3 service. Keep the existing table prefix and
-`https://sv-untereuerheim.de` site URL. The full `/var/www/html` tree lives
-on a persistent Railway volume; do not replace it with an empty volume.
+Apache uses prefork. Preserve the existing table prefix and
+`https://sv-untereuerheim.de` site URL, and never replace populated site data
+with an empty volume. Runtime credentials and site data are outside Git.

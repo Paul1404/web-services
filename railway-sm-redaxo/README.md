@@ -1,18 +1,14 @@
-# Private Schlossmuehle REDAXO service
+# Schlossmühle REDAXO image
 
-This service pins an immutable Friends Of REDAXO image digest. It has no public Railway domain. The
-protected `sm-redaxo-origin` service reaches it over the private network.
-The image and runtime explicitly disable Apache's event MPM so only the
-PHP-compatible prefork MPM is active.
+This build supplies the Schlossmühle REDAXO workload on Vertex RKE2. Fleet
+manages the deployment, its persistent `/var/www/html` volume and the separate
+MariaDB workload. CloudFront reaches it through the protected Vertex Gateway.
+The `railway-` directory name is retained for existing build and release
+scripts. The image pins an immutable Friends Of REDAXO digest and uses Apache
+prefork rather than the event MPM.
 
-REDAXO persists all of `/var/www/html` in a Railway volume. The database is an isolated logical database and user on
-the project's shared MariaDB 12.3 service.
-
-`REDAXO_MIGRATION_HOLD=1` runs an idle process so the volume can be populated
-without installing a blank site. After the files and database are copied,
-set it to `0`. The entrypoint refuses an empty volume and uses REDAXO's own
-`db:set-connection` command to update the copied config with the Railway
-database settings before starting Apache. Never print or commit database
-credentials. For recovery, restore verified website-file and database backups,
-then verify a full restart and the protected origin before directing traffic.
-The former SSH host is retired and is not a recovery target.
+`REDAXO_MIGRATION_HOLD=1` runs an idle process for an explicitly authorized
+migration. After copying site files and database data, set it to `0`. The
+entrypoint refuses an empty volume and uses REDAXO's `db:set-connection` to
+apply the configured database connection. Never print or commit credentials.
+Do not run independent writers against the same site data.
