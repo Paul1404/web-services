@@ -1,15 +1,13 @@
-# Private Wengertsberg WordPress service
+# Wengertsberg WordPress image
 
-This Dockerfile pins the WordPress release used by this site
-and ensures at build and runtime that Apache loads only `mpm_prefork`. The service has no public
-Railway domain. It is reached through the project's `wengertsberg-origin`
-service over the private network and uses the isolated `wengertsberg` logical
-database and user on the project's MariaDB 12.3 service.
+This build supplies the Wengertsberg WordPress workload on Vertex RKE2. Fleet
+manages the deployment, its persistent `/var/www/html` volume and the separate
+MariaDB workload. CloudFront reaches it through the protected Vertex Gateway.
+The `railway-` directory name is retained for existing build and release
+scripts. The image pins the WordPress release and uses Apache prefork.
 
-The full `/var/www/html` tree is persisted in its Railway volume. Keep the
-existing table prefix and the public `https://wengertsberg.de` site
-URL when migrating. Do not deploy an empty WordPress volume as a replacement
-for the copied site.
+Preserve the existing table prefix and `https://wengertsberg.de` site URL.
+Never replace populated WordPress data with an empty volume.
 
 ## Website theme
 
@@ -86,7 +84,7 @@ em/en dashes. Avoid generic feature-card grids, qualification badges, repeated
 category labels, and inflated marketing copy. Keep the focus on Alexander,
 his actual experience, and readable service descriptions.
 
-Apache listens on port 80. Keep the Railway service variable `PORT=80` so
+Apache listens on port 80. Keep `PORT=80` so
 deployment health checks target the actual listener. `/healthz` must return
 200 only when WordPress can read its database. Public recovery verification
 also requires HTML from the canonical website URL.
