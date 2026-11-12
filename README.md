@@ -1,5 +1,14 @@
 # Web services
 
+Active image recipes, the managed theme and tests have moved to
+[vertex-images](https://github.com/Paul1404/vertex-images/tree/main/recipes/web-services).
+The three sites now use its tested, scanned and signed images through private
+Vertex Fleet promotion. Make future changes in that repository. The publishers
+here are disabled; do not re-enable them. This repository remains available for
+historical source and recovery archives pending the archival decision.
+
+The sections below describe the previous build and release setup.
+
 Build and release sources for three websites running on the Vertex RKE2 cluster:
 SV Untereuerheim, Schlossmühle Untereuerheim and Wengertsberg. Their CMS images
 are published to GHCR and deployed through Rancher Fleet. Existing public
