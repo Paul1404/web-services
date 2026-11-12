@@ -2,6 +2,16 @@
 
 `AGENTS.md` is the canonical guide. `CLAUDE.md` imports it.
 
+## Maintenance moved
+
+Active CMS image recipes, the managed theme and fixture tests now live in the
+public `Paul1404/vertex-images` repository under `recipes/web-services`.
+Promotion and runtime configuration remain in private `Paul1404/vertex-fleet`.
+The two publishers in this repository are disabled after verified adoption of
+the hub images. Do not re-enable them or make new releases here. Keep existing
+release archives available for recovery. The remaining guidance records the
+historical setup and still applies when inspecting its recovery sources.
+
 ## Scope
 
 Website releases are promoted to the private `Paul1404/vertex-fleet`
